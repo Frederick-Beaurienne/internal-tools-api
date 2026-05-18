@@ -15,7 +15,6 @@ public class UpdateToolRequest {
     // ---------- ATTRIBUTES ---------- //
 
     @Schema(description = "Tool name", example = "Slack")
-    @NotBlank(message = "Tool name is required")
     @Size(max = 100, message = "Tool name must not exceed 100 characters")
     private String name;
 
@@ -24,7 +23,6 @@ public class UpdateToolRequest {
     private String description;
 
     @Schema(description = "Tool vendor", example = "Slack")
-    @NotBlank(message = "Vendor is required")
     @Size(max = 100, message = "Vendor must not exceed 100 characters")
     private String vendor;
 
@@ -32,24 +30,19 @@ public class UpdateToolRequest {
     private String websiteUrl;
 
     @Schema(description = "Category ID", example = "1")
-    @NotNull(message = "Category ID is required")
     private Integer categoryId;
 
     @Schema(description = "Monthly subscription cost", example = "1200.00")
-    @NotNull(message = "Monthly cost is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Monthly cost must be positive")
     private BigDecimal monthlyCost;
 
     @Schema(description = "Owner department")
-    @NotNull(message = "Owner department is required")
     private DepartmentType ownerDepartment;
 
     @Schema(description = "Tool lifecycle status")
-    @NotNull(message = "Status is required")
     private ToolStatusType status;
 
     @Schema(description = "Active users count", example = "150")
-    @NotNull(message = "Active users count is required")
     @Min(value = 0, message = "Active users count must be positive")
     private Integer activeUsersCount;
 

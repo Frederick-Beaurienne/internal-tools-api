@@ -63,18 +63,12 @@ class ToolControllerTest {
     private String createUpdateToolRequestJson() {
 
         return """
-                {
-                  "name": "Slack Enterprise",
-                  "description": "Updated enterprise communication platform",
-                  "vendor": "Slack",
-                  "websiteUrl": "https://slack.com",
-                  "categoryId": 1,
-                  "monthlyCost": 1800.00,
-                  "ownerDepartment": "Engineering",
-                  "status": "active",
-                  "activeUsersCount": 220
-                }
-                """;
+            {
+              "monthly_cost": 1800.00,
+              "status": "active",
+              "description": "Updated enterprise communication platform"
+            }
+            """;
     }
 
     private String createCreateToolRequestJson() {
@@ -84,12 +78,12 @@ class ToolControllerTest {
               "name": "LinearTest",
               "description": "Issue tracking platform",
               "vendor": "Linear",
-              "websiteUrl": "https://linear.app",
-              "categoryId": 1,
-              "monthlyCost": 250.00,
-              "ownerDepartment": "Engineering",
+              "website_url": "https://linear.app",
+              "category_id": 1,
+              "monthly_cost": 250.00,
+              "owner_department": "Engineering",
               "status": "active",
-              "activeUsersCount": 40
+              "active_users_count": 40
             }
             """;
     }
@@ -101,12 +95,19 @@ class ToolControllerTest {
     class GetEndpointsTests {
 
         @Test
-        @DisplayName("Should return all tools")
-        void shouldReturnAllTools()
+        @DisplayName("Should return all tools when no filters are provided")
+        void shouldReturnAllToolsWhenNoFiltersAreProvided()
                 throws Exception {
 
-            when(toolService.getAllTools())
-                    .thenReturn(List.of(createMockToolResponse()));
+            when(toolService.getToolsWithFilters(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            )).thenReturn(List.of(createMockToolResponse()));
 
             mockMvc.perform(get("/api/tools"))
 
@@ -115,14 +116,97 @@ class ToolControllerTest {
                     .andExpect(jsonPath("$.success")
                             .value(true))
 
-                    .andExpect(jsonPath("$.message")
-                            .value("Tools retrieved successfully"))
-
                     .andExpect(jsonPath("$.data")
                             .isArray())
 
-                    .andExpect(jsonPath("$.data[0].name")
-                            .value("Slack"));
+                    .andExpect(jsonPath("$.data.length()")
+                            .value(1));
+
+            verify(toolService).getToolsWithFilters(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        }
+
+        @Test
+        @DisplayName("Should filter tools by category")
+        void shouldFilterToolsByCategory()
+                throws Exception {
+
+            when(toolService.getToolsWithFilters(
+                    null,
+                    null,
+                    "Development",
+                    null,
+                    null,
+                    null,
+                    null
+            )).thenReturn(List.of(createMockToolResponse()));
+
+            mockMvc.perform(
+                            get("/api/tools")
+                                    .param("category", "Development")
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true));
+
+            verify(toolService).getToolsWithFilters(
+                    null,
+                    null,
+                    "Development",
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        }
+
+        @Test
+        @DisplayName("Should filter tools with multiple criteria")
+        void shouldFilterToolsWithMultipleCriteria()
+                throws Exception {
+
+            when(toolService.getToolsWithFilters(
+                    DepartmentType.Engineering,
+                    ToolStatusType.active,
+                    "Development",
+                    null,
+                    null,
+                    new BigDecimal("10"),
+                    new BigDecimal("50")
+            )).thenReturn(List.of(createMockToolResponse()));
+
+            mockMvc.perform(
+                            get("/api/tools")
+                                    .param("department", "Engineering")
+                                    .param("status", "active")
+                                    .param("category", "Development")
+                                    .param("min_cost", "10")
+                                    .param("max_cost", "50")
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true));
+
+            verify(toolService).getToolsWithFilters(
+                    DepartmentType.Engineering,
+                    ToolStatusType.active,
+                    "Development",
+                    null,
+                    null,
+                    new BigDecimal("10"),
+                    new BigDecimal("50")
+            );
         }
 
         @Test

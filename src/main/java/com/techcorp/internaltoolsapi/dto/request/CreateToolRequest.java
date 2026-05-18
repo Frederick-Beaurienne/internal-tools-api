@@ -82,14 +82,12 @@ public class CreateToolRequest {
     @Schema(
             description = "Tool lifecycle status"
     )
-    @NotNull(message = "Status is required")
     private ToolStatusType status;
 
     @Schema(
             description = "Active users count",
             example = "150"
     )
-    @NotNull(message = "Active users count is required")
     @Min(
             value = 0,
             message = "Active users count must be positive"

@@ -5,7 +5,6 @@ import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.Category;
 import com.techcorp.internaltoolsapi.entity.Tool;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 
 /**
@@ -63,14 +62,22 @@ public final class ToolMapper {
         tool.setCategory(category);
         tool.setMonthlyCost(request.getMonthlyCost());
         tool.setOwnerDepartment(request.getOwnerDepartment());
-        tool.setStatus(request.getStatus());
-        tool.setActiveUsersCount(request.getActiveUsersCount());
+
+        tool.setStatus(
+                request.getStatus() != null ?
+                        request.getStatus() : ToolStatusType.active
+        );
+        tool.setActiveUsersCount(
+                request.getActiveUsersCount() != null ?
+                        request.getActiveUsersCount() : 0
+        );
 
         return tool;
     }
 
     /**
      * Updates an existing tool entity from request DTO.
+     * Only provided fields are updated.
      *
      * @param tool existing tool entity
      * @param request update request
@@ -82,14 +89,40 @@ public final class ToolMapper {
             Category category
     ) {
 
-        tool.setName(request.getName());
-        tool.setDescription(request.getDescription());
-        tool.setVendor(request.getVendor());
-        tool.setWebsiteUrl(request.getWebsiteUrl());
-        tool.setCategory(category);
-        tool.setMonthlyCost(request.getMonthlyCost());
-        tool.setOwnerDepartment(request.getOwnerDepartment());
-        tool.setStatus(request.getStatus());
-        tool.setActiveUsersCount(request.getActiveUsersCount());
+        if (request.getName() != null) {
+            tool.setName(request.getName());
+        }
+
+        if (request.getDescription() != null) {
+            tool.setDescription(request.getDescription());
+        }
+
+        if (request.getVendor() != null) {
+            tool.setVendor(request.getVendor());
+        }
+
+        if (request.getWebsiteUrl() != null) {
+            tool.setWebsiteUrl(request.getWebsiteUrl());
+        }
+
+        if (category != null) {
+            tool.setCategory(category);
+        }
+
+        if (request.getMonthlyCost() != null) {
+            tool.setMonthlyCost(request.getMonthlyCost());
+        }
+
+        if (request.getOwnerDepartment() != null) {
+            tool.setOwnerDepartment(request.getOwnerDepartment());
+        }
+
+        if (request.getStatus() != null) {
+            tool.setStatus(request.getStatus());
+        }
+
+        if (request.getActiveUsersCount() != null) {
+            tool.setActiveUsersCount(request.getActiveUsersCount());
+        }
     }
 }

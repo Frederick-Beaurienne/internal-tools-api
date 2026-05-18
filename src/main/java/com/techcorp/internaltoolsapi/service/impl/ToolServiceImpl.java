@@ -5,17 +5,23 @@ import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.Category;
 import com.techcorp.internaltoolsapi.entity.Tool;
+import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.exception.DuplicateResourceException;
 import com.techcorp.internaltoolsapi.exception.ResourceNotFoundException;
 import com.techcorp.internaltoolsapi.mapper.ToolMapper;
 import com.techcorp.internaltoolsapi.repository.CategoryRepository;
 import com.techcorp.internaltoolsapi.repository.ToolRepository;
 import com.techcorp.internaltoolsapi.service.ToolService;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,11 +54,108 @@ public class ToolServiceImpl
     // ---------- BUSINESS METHODS ---------- //
 
     @Override
-    public List<ToolResponse> getAllTools() {
+    public List<ToolResponse> getToolsWithFilters(
+            DepartmentType department,
+            ToolStatusType status,
+            String category,
+            String vendor,
+            String name,
+            BigDecimal minCost,
+            BigDecimal maxCost
+    ) {
 
-        logger.info("Retrieving all tools");
+        logger.info(
+                """
+                        Retrieving tools with filters:
+                        department={}, status={}, category={}, vendor={}, name={},
+                        minCost={}, maxCost={}
+                        """,
+                department,
+                status,
+                category,
+                vendor,
+                name,
+                minCost,
+                maxCost
+        );
 
-        List<Tool> tools = toolRepository.findAll();
+        Specification<Tool> specification = (
+                root,
+                query,
+                criteriaBuilder
+        ) -> {
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (department != null) {
+
+                predicates.add(
+                        criteriaBuilder.equal(root.get("ownerDepartment"), department)
+                );
+            }
+
+            if (status != null) {
+
+                predicates.add(
+                        criteriaBuilder.equal(root.get("status"), status)
+                );
+            }
+
+            if (category != null) {
+
+                predicates.add(
+                        criteriaBuilder.equal(
+                                criteriaBuilder.lower(root.get("category").get("name")),
+                                category.toLowerCase()
+                        )
+                );
+            }
+
+            if (vendor != null) {
+
+                predicates.add(
+                        criteriaBuilder.equal(
+                                criteriaBuilder.lower(root.get("vendor")),
+                                vendor.toLowerCase()
+                        )
+                );
+            }
+
+            if (name != null) {
+
+                predicates.add(
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("name")),
+                                "%" + name.toLowerCase() + "%"
+                        )
+                );
+            }
+
+            if (minCost != null) {
+
+                predicates.add(
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("monthlyCost"), minCost)
+                );
+            }
+
+            if (maxCost != null) {
+
+                predicates.add(
+                        criteriaBuilder.lessThanOrEqualTo(root.get("monthlyCost"), maxCost)
+                );
+            }
+
+            return criteriaBuilder.and(
+                    predicates.toArray(new Predicate[0])
+            );
+        };
+
+        List<Tool> tools = toolRepository.findAll(specification);
+
+        logger.info(
+                "Retrieved {} filtered tools",
+                tools.size()
+        );
 
         return tools.stream()
                 .map(ToolMapper::toResponse)
@@ -124,20 +227,29 @@ public class ToolServiceImpl
                         )
                 );
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Category with ID "
-                                        + request.getCategoryId()
-                                        + " does not exist"
-                        )
-                );
+        Category category = null;
 
-        boolean nameAlreadyExists = toolRepository.existsByNameIgnoreCase(request.getName());
+        if (request.getCategoryId() != null) {
 
-        if (nameAlreadyExists && !tool.getName().equalsIgnoreCase(request.getName())) {
+            category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Category with ID "
+                                            + request.getCategoryId()
+                                            + " does not exist"
+                            )
+                    );
+        }
 
-            throw new DuplicateResourceException("A tool with this name already exists");
+        if (request.getName() != null) {
+
+            boolean nameAlreadyExists = toolRepository.existsByNameIgnoreCase(request.getName());
+
+            if (nameAlreadyExists
+                    && !tool.getName().equalsIgnoreCase(request.getName())) {
+
+                throw new DuplicateResourceException("A tool with this name already exists");
+            }
         }
 
         ToolMapper.updateEntity(tool, request, category);

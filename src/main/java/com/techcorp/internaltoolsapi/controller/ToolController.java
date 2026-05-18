@@ -4,6 +4,8 @@ import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ApiResponse;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.service.ToolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -24,8 +27,9 @@ import java.util.List;
 @Tag(
         name = "Tools",
         description = """
-                Endpoints for internal SaaS tools
-                management and retrieval.
+                REST endpoints for internal SaaS
+                tools management, lifecycle updates
+                and operational tracking.
                 """
 )
 public class ToolController {
@@ -46,35 +50,66 @@ public class ToolController {
     // ---------- ENDPOINTS ---------- //
 
     /**
-     * Retrieves all available tools.
+     * Retrieves tools with optional filtering support.
      *
-     * @return list of tool responses
+     * @param department optional department filter
+     * @param status     optional status filter
+     * @param category   optional category filter
+     * @param vendor     optional vendor filter
+     * @param name       optional partial name filter
+     * @param minCost    optional minimum monthly cost
+     * @param maxCost    optional maximum monthly cost
+     * @return filtered tool list
      */
     @GetMapping
     @Operation(
-            summary = "Retrieve all tools",
+            summary = "Retrieve tools with optional filtering",
             description = """
-                    Returns all internal SaaS tools
-                    available in the platform.
+                    Returns internal SaaS tools with optional filtering support.
                     
-                    Includes:
-                    - category
-                    - vendor
-                    - status
-                    - department ownership
-                    - monthly cost
+                    Supported filters:
+                    - department (exact enum match)
+                    - status (exact enum match)
+                    - category (case-insensitive exact match)
+                    - vendor (case-insensitive exact match)
+                    - name (case-insensitive partial match)
+                    - min_cost (inclusive minimum monthly cost)
+                    - max_cost (inclusive maximum monthly cost)
+                    
+                    All filters are optional and combinable.
+                    
+                    Pagination and sorting are intentionally omitted
+                    to keep the API focused on the technical
+                    requirements of the exercise.
                     """
     )
-    public ApiResponse<List<ToolResponse>> getAllTools() {
+    public ApiResponse<List<ToolResponse>> getTools(
+            @RequestParam(name = "department", required = false) DepartmentType department,
+            @RequestParam(name = "status", required = false) ToolStatusType status,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "vendor", required = false) String vendor,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "min_cost", required = false) BigDecimal minCost,
+            @RequestParam(name = "max_cost", required = false) BigDecimal maxCost
+    ) {
 
         List<ToolResponse> tools =
-                toolService.getAllTools();
+                toolService.getToolsWithFilters(
+                        department,
+                        status,
+                        category,
+                        vendor,
+                        name,
+                        minCost,
+                        maxCost
+                );
 
         return ApiResponse.success(
                 tools,
                 "Tools retrieved successfully"
         );
     }
+
 
     /**
      * Retrieves a tool by its identifier.
@@ -125,14 +160,20 @@ public class ToolController {
     @Operation(
             summary = "Create a new tool",
             description = """
-                Creates a new internal SaaS tool.
-                
-                The endpoint validates:
-                - unique tool name
-                - category existence
-                - required fields
-                - enum values
-                """
+                    Creates a new internal SaaS tool.
+                    
+                    The endpoint validates:
+                    - unique tool name
+                    - category existence
+                    - enum values
+                    
+                    Default values:
+                    - status = active
+                    - active_users_count = 0
+                    
+                    Request and response payloads
+                    use snake_case JSON naming.
+                    """
     )
     public ApiResponse<ToolResponse> createTool(
 
@@ -153,25 +194,39 @@ public class ToolController {
     }
 
     /**
-     * Updates an existing internal tool.
+     * Updates an existing tool.
+     * <p>
+     * Only provided fields are updated.
+     * Fields omitted from the request remain unchanged.
+     * <p>
+     * An empty update request is accepted
+     * but does not modify the existing entity.
      *
-     * @param id tool ID
-     * @param request update payload
+     * @param id      tool ID
+     * @param request partial update payload
      * @return updated tool response
      */
     @PutMapping("/{id}")
     @Operation(
             summary = "Update an existing tool",
             description = """
-                Updates an existing internal SaaS tool.
-
-                The endpoint validates:
-                - tool existence
-                - unique tool name
-                - category existence
-                - required fields
-                - enum values
-                """
+                    Updates an existing internal SaaS tool.
+                    
+                    Only provided fields are updated.
+                    Fields omitted from the request
+                    remain unchanged.
+                    
+                    An empty request body is accepted
+                    but results in no data modification.
+                    
+                    The endpoint validates:
+                    - tool existence
+                    - category existence
+                    - enum values
+                    
+                    Request and response payloads
+                    use snake_case JSON naming.
+                    """
     )
     public ApiResponse<ToolResponse> updateTool(
             @PathVariable
@@ -201,11 +256,13 @@ public class ToolController {
     @Operation(
             summary = "Delete an existing tool",
             description = """
-                Deletes an internal SaaS tool.
-
-                The endpoint validates:
-                - tool existence
-                """
+                    Deletes an internal SaaS tool.
+                    
+                    The endpoint validates:
+                    - tool existence
+                    
+                    The operation is irreversible.
+                    """
     )
     public ApiResponse<Object> deleteTool(
             @PathVariable

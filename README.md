@@ -25,9 +25,12 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 # Features
 
 - REST API for internal tools management
+- Dynamic multi-criteria filtering
+- Case-insensitive search support
 - Standardized API responses
 - PostgreSQL integration
 - PostgreSQL native enum mapping
+- Criteria API dynamic query building
 - OpenAPI / Swagger documentation
 - Validation & centralized error handling
 - Structured application logging
@@ -158,6 +161,9 @@ mvn spring-boot:run
 
 # Swagger Documentation
 
+The API uses snake_case JSON naming conventions
+for request and response payload consistency.
+
 Swagger UI:
 
 ```text
@@ -184,6 +190,8 @@ The project currently includes:
 - CRUD endpoint workflow testing
 - PostgreSQL enum integration testing
 - API response contract verification
+- Dynamic filtering endpoint testing
+- Query parameter binding verification
 
 ---
 
@@ -206,6 +214,10 @@ The project currently includes:
 - Full CRUD REST endpoints
 - REST controller tests
 - Integration tests
+- Dynamic filtering system
+- Criteria API query specifications
+- Combined filter support
+- Case-insensitive filtering
 
 ## In Progress
 
@@ -289,6 +301,35 @@ Business write operations are handled within transactional service methods using
 @Transactional
 ```
 
+## Dynamic Filtering Strategy
+
+Dynamic filtering is implemented using Spring Data JPA Specifications
+and the Criteria API.
+
+This approach was chosen to:
+- avoid fragile JPQL string concatenation
+- support optional combinable filters
+- preserve SQL injection protection through parameter binding
+- improve maintainability and scalability of query logic
+
+Current filtering capabilities include:
+- department
+- status
+- category
+- vendor
+- partial name search
+- monthly cost range filtering
+
+Filtering behavior:
+- exact enum matching
+- case-insensitive text filtering
+- partial matching for tool names
+- inclusive numeric range filtering
+
+Pagination and sorting are intentionally omitted
+to keep the implementation focused on the
+technical requirements of the exercise.
+
 This ensures:
 - atomic database operations
 - automatic rollback on runtime exceptions
@@ -298,8 +339,8 @@ This ensures:
 
 # Future Improvements
 
-- Advanced CRUD filtering capabilities
-- Pagination & filtering
+- Pagination & sorting
+- Advanced search capabilities
 - Advanced analytics endpoints
 - Authentication / authorization
 - CI/CD pipeline
