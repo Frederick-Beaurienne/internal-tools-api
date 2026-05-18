@@ -1,0 +1,21 @@
+package com.techcorp.internaltoolsapi.repository;
+
+import com.techcorp.internaltoolsapi.entity.Tool;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+/**
+ * Repository for tool persistence operations.
+ */
+public interface ToolRepository
+        extends JpaRepository<Tool, Integer> {
+
+    Optional<Tool> findByNameIgnoreCase(
+            String name
+    );
+
+    boolean existsByNameIgnoreCase(
+            String name
+    );
+}

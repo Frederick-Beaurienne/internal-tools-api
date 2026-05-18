@@ -214,6 +214,32 @@ public class GlobalExceptionHandler {
     }
 
     // =========================================================
+    // DUPLICATE RESOURCE EXCEPTIONS
+    // =========================================================
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse<Object>>
+    handleDuplicateResourceException(
+            DuplicateResourceException exception
+    ) {
+
+        logger.warn(
+                "Duplicate resource: {}",
+                exception.getMessage()
+        );
+
+        ApiResponse<Object> response =
+                ApiResponse.error(
+                        "Duplicate resource",
+                        exception.getMessage()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    // =========================================================
     // GENERIC EXCEPTIONS
     // =========================================================
 
