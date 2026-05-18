@@ -1,12 +1,16 @@
-package com.techcorp.internaltoolsapi.mapper;
+package com.techcorp.internaltoolsapi.tools.mapper;
 
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
-import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
-import com.techcorp.internaltoolsapi.entity.Category;
-import com.techcorp.internaltoolsapi.entity.Tool;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.tools.entity.Category;
+import com.techcorp.internaltoolsapi.tools.entity.Tool;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
+import com.techcorp.internaltoolsapi.analytics.dto.response.UsageMetricsResponse;
+import com.techcorp.internaltoolsapi.analytics.dto.response.UsagePeriodMetricsResponse;
 
+import java.math.BigDecimal;
 /**
  * Mapper responsible for tool DTO conversions.
  */
@@ -39,6 +43,84 @@ public final class ToolMapper {
                 tool.getCreatedAt(),
                 tool.getUpdatedAt()
         );
+    }
+
+    /**
+     * Maps Tool entity to detailed response DTO.
+     * <p>
+     * Includes analytics and financial metrics
+     * intended for detailed single-resource endpoints.
+     *
+     * @param tool tool entity
+     * @return mapped detailed response DTO
+     */
+    public static ToolDetailsResponse toDetailsResponse(
+            Tool tool
+    ) {
+
+        ToolResponse baseResponse =
+                toResponse(tool);
+
+        ToolDetailsResponse response =
+                new ToolDetailsResponse();
+
+        // ---------- BASE FIELDS ---------- //
+
+        response.setId(baseResponse.getId());
+        response.setName(baseResponse.getName());
+        response.setDescription(baseResponse.getDescription());
+        response.setVendor(baseResponse.getVendor());
+        response.setWebsiteUrl(baseResponse.getWebsiteUrl());
+        response.setCategory(baseResponse.getCategory());
+        response.setMonthlyCost(baseResponse.getMonthlyCost());
+        response.setOwnerDepartment(
+                baseResponse.getOwnerDepartment()
+        );
+        response.setStatus(baseResponse.getStatus());
+        response.setActiveUsersCount(
+                baseResponse.getActiveUsersCount()
+        );
+        response.setCreatedAt(baseResponse.getCreatedAt());
+        response.setUpdatedAt(baseResponse.getUpdatedAt());
+
+        // ---------- FINANCIAL METRICS ---------- //
+
+        if (
+                tool.getMonthlyCost() != null
+                        && tool.getActiveUsersCount() != null
+        ) {
+
+            BigDecimal totalMonthlyCost =
+                    tool.getMonthlyCost()
+                            .multiply(
+                                    BigDecimal.valueOf(
+                                            tool.getActiveUsersCount()
+                                    )
+                            );
+
+            response.setTotalMonthlyCost(
+                    totalMonthlyCost
+            );
+        }
+
+        // ---------- MOCK USAGE METRICS ---------- //
+
+        UsagePeriodMetricsResponse last30Days =
+                new UsagePeriodMetricsResponse(
+                        127,
+                        45
+                );
+
+        UsageMetricsResponse usageMetrics =
+                new UsageMetricsResponse(
+                        last30Days
+                );
+
+        response.setUsageMetrics(
+                usageMetrics
+        );
+
+        return response;
     }
 
     /**

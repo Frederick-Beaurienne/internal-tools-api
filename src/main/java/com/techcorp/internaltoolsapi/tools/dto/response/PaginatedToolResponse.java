@@ -1,7 +1,7 @@
-package com.techcorp.internaltoolsapi.dto.response;
+package com.techcorp.internaltoolsapi.tools.dto.response;
 
-import com.techcorp.internaltoolsapi.dto.response.metadata.PaginationMetadata;
-import com.techcorp.internaltoolsapi.dto.response.metadata.SortingMetadata;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.PaginationMetadata;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.SortingMetadata;
 
 import java.util.List;
 import java.util.Map;

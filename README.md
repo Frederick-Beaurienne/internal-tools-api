@@ -63,27 +63,39 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 
 ---
 
-# Project Architecture
+## Architecture Overview
 
-```text
-src/main/java/com/techcorp/internaltoolsapi
-├── analytics
-│   ├── dto
-│   └── service
-├── config
-├── controller
-├── dto
-│   ├── request
-│   └── response
-├── entity
-│   └── enums
-├── exception
-├── mapper
-├── repository
-├── service
-│   └── impl
-└── validation
-```
+The project follows a layered and partially feature-oriented architecture.
+
+### Core Modules
+
+- `tools`
+  Contains the main business domain:
+  entities, DTOs, repositories, services and mappers related to tool management.
+
+- `analytics`
+  Contains reporting and metrics-oriented business logic.
+  This module prepares future analytical and optimization features.
+
+### Shared Technical Layers
+
+- `controller`
+  Exposes the REST API endpoints.
+
+- `exception`
+  Centralizes structured API exception handling.
+
+- `validation`
+  Contains custom validation logic and constraints.
+
+### Main Architectural Principles
+
+- Separation of concerns
+- DTO-based API contracts
+- Dedicated mapper layer
+- Repository pattern with Spring Data JPA
+- Pagination and filtering abstraction
+- Analytics-ready modular structure
 
 The application follows a layered architecture inspired by SOLID principles and common Spring Boot enterprise practices.
 
@@ -228,6 +240,7 @@ Example:
   "details": {},
   "timestamp": "2025-08-20T14:30:00Z"
 }
+```
 
 ---
 

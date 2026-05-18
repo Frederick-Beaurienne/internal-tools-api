@@ -1,6 +1,6 @@
-package com.techcorp.internaltoolsapi.repository;
+package com.techcorp.internaltoolsapi.tools.repository;
 
-import com.techcorp.internaltoolsapi.entity.Tool;
+import com.techcorp.internaltoolsapi.tools.entity.Tool;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

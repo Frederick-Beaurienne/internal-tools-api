@@ -1,4 +1,4 @@
-package com.techcorp.internaltoolsapi.dto.response;
+package com.techcorp.internaltoolsapi.tools.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;

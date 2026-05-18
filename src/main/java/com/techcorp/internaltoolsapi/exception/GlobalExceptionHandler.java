@@ -1,6 +1,6 @@
 package com.techcorp.internaltoolsapi.exception;
 
-import com.techcorp.internaltoolsapi.dto.response.ErrorResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

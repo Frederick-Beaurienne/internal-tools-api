@@ -1,11 +1,12 @@
-package com.techcorp.internaltoolsapi.service;
+package com.techcorp.internaltoolsapi.tools.service;
 
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
-import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.PaginatedToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 
 import java.math.BigDecimal;
 
@@ -86,7 +87,7 @@ public interface ToolService {
      * @param id tool identifier
      * @return tool response
      */
-    ToolResponse getToolById(
+    ToolDetailsResponse getToolById(
             Integer id
     );
 

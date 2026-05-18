@@ -1,7 +1,7 @@
-package com.techcorp.internaltoolsapi.entity;
+package com.techcorp.internaltoolsapi.tools.entity;
 
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;

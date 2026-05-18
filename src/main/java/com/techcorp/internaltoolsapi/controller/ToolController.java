@@ -1,12 +1,13 @@
 package com.techcorp.internaltoolsapi.controller;
 
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
-import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
-import com.techcorp.internaltoolsapi.service.ToolService;
+import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.PaginatedToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.service.ToolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -192,7 +193,7 @@ public class ToolController {
                     - cost information
                     """
     )
-    public ToolResponse getToolById(
+    public ToolDetailsResponse getToolById(
             @PathVariable
             @Positive(
                     message = "Tool ID must be positive"
@@ -200,7 +201,7 @@ public class ToolController {
             Integer id
     ) {
 
-        ToolResponse tool =
+        ToolDetailsResponse tool =
                 toolService.getToolById(id);
 
         return tool;

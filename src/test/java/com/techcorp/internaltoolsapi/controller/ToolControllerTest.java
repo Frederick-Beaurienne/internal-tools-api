@@ -1,15 +1,18 @@
 package com.techcorp.internaltoolsapi.controller;
 
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
-import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.metadata.PaginationMetadata;
-import com.techcorp.internaltoolsapi.dto.response.metadata.SortingMetadata;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.PaginatedToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.PaginationMetadata;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.SortingMetadata;
+import com.techcorp.internaltoolsapi.analytics.dto.response.UsageMetricsResponse;
+import com.techcorp.internaltoolsapi.analytics.dto.response.UsagePeriodMetricsResponse;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.exception.ResourceNotFoundException;
-import com.techcorp.internaltoolsapi.service.ToolService;
+import com.techcorp.internaltoolsapi.tools.service.ToolService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -295,8 +298,11 @@ class ToolControllerTest {
         void shouldReturnToolById()
                 throws Exception {
 
+            ToolDetailsResponse response =
+                    createMockToolDetailsResponse();
+
             when(toolService.getToolById(1))
-                    .thenReturn(createMockToolResponse());
+                    .thenReturn(response);
 
             mockMvc.perform(get("/api/tools/1"))
 
@@ -312,7 +318,18 @@ class ToolControllerTest {
                             .value("Slack"))
 
                     .andExpect(jsonPath("$.category")
-                            .value("Communication"));
+                            .value("Communication"))
+
+                    .andExpect(jsonPath("$.total_monthly_cost")
+                            .value(80.0))
+
+                    .andExpect(jsonPath(
+                            "$.usage_metrics.last_30_days.total_sessions"
+                    ).value(127))
+
+                    .andExpect(jsonPath(
+                            "$.usage_metrics.last_30_days.avg_session_minutes"
+                    ).value(45));
         }
 
         @Test
@@ -475,5 +492,51 @@ class ToolControllerTest {
                     .andExpect(jsonPath("$.timestamp")
                             .exists());
         }
+    }
+
+    private ToolDetailsResponse createMockToolDetailsResponse() {
+
+        ToolDetailsResponse response =
+                new ToolDetailsResponse();
+
+        response.setId(1);
+        response.setName("Slack");
+        response.setDescription(
+                "Team communication platform"
+        );
+        response.setVendor("Slack");
+        response.setCategory("Communication");
+        response.setMonthlyCost(
+                BigDecimal.valueOf(8.00)
+        );
+        response.setOwnerDepartment(
+                DepartmentType.Engineering
+        );
+        response.setStatus(
+                ToolStatusType.active
+        );
+        response.setWebsiteUrl(
+                "https://slack.com"
+        );
+        response.setActiveUsersCount(10);
+
+        response.setTotalMonthlyCost(
+                BigDecimal.valueOf(80.0)
+        );
+
+        UsagePeriodMetricsResponse period =
+                new UsagePeriodMetricsResponse(
+                        127,
+                        45
+                );
+
+        UsageMetricsResponse metrics =
+                new UsageMetricsResponse(
+                        period
+                );
+
+        response.setUsageMetrics(metrics);
+
+        return response;
     }
 }

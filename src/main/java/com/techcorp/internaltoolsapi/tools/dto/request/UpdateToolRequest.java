@@ -1,7 +1,7 @@
-package com.techcorp.internaltoolsapi.dto.request;
+package com.techcorp.internaltoolsapi.tools.dto.request;
 
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 

@@ -1,6 +1,6 @@
-package com.techcorp.internaltoolsapi.repository;
+package com.techcorp.internaltoolsapi.tools.repository;
 
-import com.techcorp.internaltoolsapi.entity.Category;
+import com.techcorp.internaltoolsapi.tools.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

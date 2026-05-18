@@ -1,4 +1,4 @@
-package com.techcorp.internaltoolsapi.dto.response.metadata;
+package com.techcorp.internaltoolsapi.tools.dto.response.metadata;
 
 /**
  * Pagination metadata for paginated API responses.

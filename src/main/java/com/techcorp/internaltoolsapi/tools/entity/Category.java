@@ -1,4 +1,4 @@
-package com.techcorp.internaltoolsapi.entity;
+package com.techcorp.internaltoolsapi.tools.entity;
 
 import jakarta.persistence.*;
 

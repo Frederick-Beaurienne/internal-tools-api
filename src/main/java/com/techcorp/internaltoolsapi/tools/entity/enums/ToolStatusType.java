@@ -1,4 +1,4 @@
-package com.techcorp.internaltoolsapi.entity.enums;
+package com.techcorp.internaltoolsapi.tools.entity.enums;
 
 /**
  * Enum representing tool lifecycle status.

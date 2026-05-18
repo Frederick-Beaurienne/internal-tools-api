@@ -1,8 +1,9 @@
-package com.techcorp.internaltoolsapi.dto.response;
+package com.techcorp.internaltoolsapi.tools.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -10,6 +11,20 @@ import java.time.OffsetDateTime;
 /**
  * Response DTO representing a tool.
  */
+@JsonPropertyOrder({
+        "id",
+        "name",
+        "description",
+        "vendor",
+        "category",
+        "monthly_cost",
+        "owner_department",
+        "status",
+        "website_url",
+        "active_users_count",
+        "created_at",
+        "updated_at"
+})
 public class ToolResponse {
 
     // ---------- ATTRIBUTES ---------- //

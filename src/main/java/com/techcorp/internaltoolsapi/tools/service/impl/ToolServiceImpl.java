@@ -1,21 +1,22 @@
-package com.techcorp.internaltoolsapi.service.impl;
+package com.techcorp.internaltoolsapi.tools.service.impl;
 
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
-import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
-import com.techcorp.internaltoolsapi.dto.response.metadata.PaginationMetadata;
-import com.techcorp.internaltoolsapi.dto.response.metadata.SortingMetadata;
-import com.techcorp.internaltoolsapi.entity.Category;
-import com.techcorp.internaltoolsapi.entity.Tool;
-import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
-import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
+import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.PaginatedToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.PaginationMetadata;
+import com.techcorp.internaltoolsapi.tools.dto.response.metadata.SortingMetadata;
+import com.techcorp.internaltoolsapi.tools.entity.Category;
+import com.techcorp.internaltoolsapi.tools.entity.Tool;
+import com.techcorp.internaltoolsapi.tools.entity.enums.DepartmentType;
+import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.exception.DuplicateResourceException;
 import com.techcorp.internaltoolsapi.exception.ResourceNotFoundException;
-import com.techcorp.internaltoolsapi.mapper.ToolMapper;
-import com.techcorp.internaltoolsapi.repository.CategoryRepository;
-import com.techcorp.internaltoolsapi.repository.ToolRepository;
-import com.techcorp.internaltoolsapi.service.ToolService;
+import com.techcorp.internaltoolsapi.tools.mapper.ToolMapper;
+import com.techcorp.internaltoolsapi.tools.repository.CategoryRepository;
+import com.techcorp.internaltoolsapi.tools.repository.ToolRepository;
+import com.techcorp.internaltoolsapi.tools.service.ToolService;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -137,7 +138,7 @@ public class ToolServiceImpl
     }
 
     @Override
-    public ToolResponse getToolById(Integer id) {
+    public ToolDetailsResponse getToolById(Integer id) {
 
         logger.info(
                 "Retrieving tool with id: {}",
@@ -149,7 +150,7 @@ public class ToolServiceImpl
                         new ResourceNotFoundException("Tool with ID " + id + " does not exist")
                 );
 
-        return ToolMapper.toResponse(tool);
+        return ToolMapper.toDetailsResponse(tool);
     }
 
     @Transactional
