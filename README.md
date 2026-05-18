@@ -78,6 +78,16 @@ src/main/java/com/techcorp/internaltoolsapi
 
 ---
 
+# Clone Repository
+
+```bash
+git clone https://github.com/Frederick-Beaurienne/internal-tools-api.git
+
+cd internal-tools-api
+```
+
+---
+
 # Database Setup
 
 The project includes a ready-to-use PostgreSQL environment.
@@ -108,16 +118,19 @@ database: internal_tools
 
 # Run the Application
 
-## Start Spring Boot
+## Return to project root
+
+If you are still in the `docker/database` directory:
+
+
+```bash
+cd ../..
+```
+
+## Start Spring Boot application
 
 ```bash
 mvn spring-boot:run
-```
-
-Application available at:
-
-```text
-http://localhost:8080
 ```
 
 ---
