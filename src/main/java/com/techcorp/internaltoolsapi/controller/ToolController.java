@@ -2,21 +2,22 @@ package com.techcorp.internaltoolsapi.controller;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
-import com.techcorp.internaltoolsapi.dto.response.ApiResponse;
+import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.service.ToolService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * REST controller exposing tool management endpoints.
@@ -50,7 +51,8 @@ public class ToolController {
     // ---------- ENDPOINTS ---------- //
 
     /**
-     * Retrieves tools with optional filtering support.
+     * Retrieves tools using optional filtering,
+     * pagination and sorting support.
      *
      * @param department optional department filter
      * @param status     optional status filter
@@ -59,7 +61,11 @@ public class ToolController {
      * @param name       optional partial name filter
      * @param minCost    optional minimum monthly cost
      * @param maxCost    optional maximum monthly cost
-     * @return filtered tool list
+     * @return paginated response containing:
+     * - filtered tools
+     * - applied filters
+     * - pagination metadata
+     * - sorting metadata
      */
     @GetMapping
     @Operation(
@@ -78,22 +84,72 @@ public class ToolController {
                     
                     All filters are optional and combinable.
                     
-                    Pagination and sorting are intentionally omitted
-                    to keep the API focused on the technical
-                    requirements of the exercise.
+                    Pagination support:
+                    - page starts at 0
+                    - limit default value is 10
+                    
+                    Sorting support:
+                    - direction supports: asc, desc
+                    
+                    Allowed sorting fields:
+                    - name
+                    - vendor
+                    - status
+                    - monthlyCost
+                    - activeUsersCount
+                    - createdAt
+                    - updatedAt
+                    
+                    Sorting fields are intentionally restricted
+                    to preserve API contract stability
+                    and avoid unsupported property access.
                     """
     )
-    public ApiResponse<List<ToolResponse>> getTools(
+    public PaginatedToolResponse getTools(
             @RequestParam(name = "department", required = false) DepartmentType department,
             @RequestParam(name = "status", required = false) ToolStatusType status,
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "vendor", required = false) String vendor,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "min_cost", required = false) BigDecimal minCost,
-            @RequestParam(name = "max_cost", required = false) BigDecimal maxCost
+            @RequestParam(name = "max_cost", required = false) BigDecimal maxCost,
+
+            @Parameter(
+                    description = "Page index starting from 0",
+                    example = "0"
+            )
+            @RequestParam(name = "page", defaultValue = "0") int page,
+
+            @Parameter(
+                    description = "Maximum number of elements per page",
+                    example = "10"
+            )
+            @RequestParam(name = "limit", defaultValue = "10") int limit,
+
+            @Parameter(
+                    description = """
+                            Sorting field.
+                            Allowed values:
+                            name,
+                            vendor,
+                            status,
+                            monthlyCost,
+                            activeUsersCount,
+                            createdAt,
+                            updatedAt
+                            """,
+                    example = "createdAt"
+            )
+            @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
+
+            @Parameter(
+                    description = "Sorting direction: asc or desc",
+                    example = "desc"
+            )
+            @RequestParam(name = "direction", defaultValue = "desc") String direction
     ) {
 
-        List<ToolResponse> tools =
+        PaginatedToolResponse response =
                 toolService.getToolsWithFilters(
                         department,
                         status,
@@ -101,18 +157,22 @@ public class ToolController {
                         vendor,
                         name,
                         minCost,
-                        maxCost
+                        maxCost,
+                        page,
+                        limit,
+                        sort,
+                        direction
                 );
 
-        return ApiResponse.success(
-                tools,
-                "Tools retrieved successfully"
-        );
+        return response;
     }
 
-
     /**
-     * Retrieves a tool by its identifier.
+     * Retrieves detailed information
+     * about a specific internal tool.
+     * <p>
+     * A ResourceNotFoundException is thrown
+     * if the tool does not exist.
      *
      * @param id tool identifier
      * @return tool response
@@ -132,8 +192,7 @@ public class ToolController {
                     - cost information
                     """
     )
-    public ApiResponse<ToolResponse> getToolById(
-
+    public ToolResponse getToolById(
             @PathVariable
             @Positive(
                     message = "Tool ID must be positive"
@@ -144,19 +203,25 @@ public class ToolController {
         ToolResponse tool =
                 toolService.getToolById(id);
 
-        return ApiResponse.success(
-                tool,
-                "Tool retrieved successfully"
-        );
+        return tool;
     }
 
     /**
-     * Creates a new internal tool.
+     * Creates a new internal tool
+     * and returns HTTP 201 Created.
+     * <p>
+     * Default values:
+     * - status = active
+     * - active_users_count = 0
+     * <p>
+     * A DuplicateResourceException is thrown
+     * if a tool with the same name already exists.
      *
      * @param request tool creation payload
      * @return created tool response
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Create a new tool",
             description = """
@@ -175,8 +240,7 @@ public class ToolController {
                     use snake_case JSON naming.
                     """
     )
-    public ApiResponse<ToolResponse> createTool(
-
+    public ToolResponse createTool(
             @Valid
             @RequestBody
             CreateToolRequest request
@@ -187,10 +251,7 @@ public class ToolController {
                         request
                 );
 
-        return ApiResponse.success(
-                createdTool,
-                "Tool created successfully"
-        );
+        return createdTool;
     }
 
     /**
@@ -201,6 +262,9 @@ public class ToolController {
      * <p>
      * An empty update request is accepted
      * but does not modify the existing entity.
+     * <p>
+     * A ResourceNotFoundException is thrown
+     * if the target tool does not exist.
      *
      * @param id      tool ID
      * @param request partial update payload
@@ -228,7 +292,7 @@ public class ToolController {
                     use snake_case JSON naming.
                     """
     )
-    public ApiResponse<ToolResponse> updateTool(
+    public ToolResponse updateTool(
             @PathVariable
             @Positive(message = "Tool ID must be positive")
             Integer id,
@@ -240,19 +304,22 @@ public class ToolController {
 
         ToolResponse updatedTool = toolService.updateTool(id, request);
 
-        return ApiResponse.success(
-                updatedTool,
-                "Tool updated successfully"
-        );
+        return updatedTool;
     }
 
     /**
      * Deletes an existing internal tool.
+     * <p>
+     * The operation is irreversible
+     * and permanently removes the tool.
+     * <p>
+     * Returns HTTP 204 No Content
+     * when deletion succeeds.
      *
      * @param id tool ID
-     * @return success response
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Delete an existing tool",
             description = """
@@ -261,20 +328,16 @@ public class ToolController {
                     The endpoint validates:
                     - tool existence
                     
-                    The operation is irreversible.
+                    The operation is irreversible
+                    and permanently removes the tool.
                     """
     )
-    public ApiResponse<Object> deleteTool(
+    public void deleteTool(
             @PathVariable
             @Positive(message = "Tool ID must be positive")
             Integer id
     ) {
 
         toolService.deleteTool(id);
-
-        return ApiResponse.success(
-                null,
-                "Tool deleted successfully"
-        );
     }
 }

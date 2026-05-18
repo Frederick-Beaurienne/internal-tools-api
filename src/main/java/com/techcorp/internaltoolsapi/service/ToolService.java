@@ -2,12 +2,12 @@ package com.techcorp.internaltoolsapi.service;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Service responsible for internal tool
@@ -16,7 +16,8 @@ import java.util.List;
 public interface ToolService {
 
     /**
-     * Retrieves tools using optional filtering criteria.
+     * Retrieves tools using optional filtering criteria,
+     * pagination and sorting support.
      * <p>
      * Supported filters:
      * - department exact match
@@ -26,11 +27,27 @@ public interface ToolService {
      * - name partial match (case-insensitive)
      * - monthly cost range filtering
      * <p>
-     * All filters are optional and combinable.
+     * Supported sorting fields:
+     * - name
+     * - vendor
+     * - status
+     * - monthlyCost
+     * - activeUsersCount
+     * - createdAt
+     * - updatedAt
      * <p>
-     * Pagination and sorting are intentionally omitted
-     * to keep the implementation focused on the
-     * requirements of the exercise.
+     * Sorting direction:
+     * - asc
+     * - desc
+     * <p>
+     * Sorting fields are intentionally restricted
+     * to a controlled whitelist in order to:
+     * - avoid invalid or unsupported property access
+     * - preserve API contract stability
+     * - prevent exposing unintended internal fields
+     * - keep sorting behavior predictable and maintainable
+     * <p>
+     * All filters are optional and combinable.
      *
      * @param department optional department filter
      * @param status     optional status filter
@@ -39,16 +56,28 @@ public interface ToolService {
      * @param name       optional partial name filter
      * @param minCost    optional minimum monthly cost
      * @param maxCost    optional maximum monthly cost
-     * @return filtered tool list
+     * @param page       page index starting from 0
+     * @param limit      number of elements per page
+     * @param sort       sorting field
+     * @param direction  sorting direction
+     * @return paginated response containing:
+     * - filtered tools
+     * - applied filters
+     * - pagination metadata
+     * - sorting metadata
      */
-    List<ToolResponse> getToolsWithFilters(
+    PaginatedToolResponse getToolsWithFilters(
             DepartmentType department,
             ToolStatusType status,
             String category,
             String vendor,
             String name,
             BigDecimal minCost,
-            BigDecimal maxCost
+            BigDecimal maxCost,
+            int page,
+            int limit,
+            String sort,
+            String direction
     );
 
     /**
@@ -67,6 +96,9 @@ public interface ToolService {
      * Default values:
      * - status = active
      * - active users count = 0
+     * <p>
+     * A DuplicateResourceException is thrown
+     * if a tool with the same name already exists.
      *
      * @param request tool creation payload
      * @return created tool response
@@ -83,6 +115,9 @@ public interface ToolService {
      * <p>
      * An empty update request is accepted
      * but does not modify the existing entity.
+     * <p>
+     * A ResourceNotFoundException is thrown
+     * if the target tool does not exist.
      *
      * @param id      tool ID
      * @param request partial update payload
@@ -94,7 +129,12 @@ public interface ToolService {
     );
 
     /**
-     * Deletes an existing tool.
+     * Deletes an existing internal tool.
+     * <p>
+     * The operation is irreversible.
+     * <p>
+     * A ResourceNotFoundException is thrown
+     * if the target tool does not exist.
      *
      * @param id tool ID
      */

@@ -1,6 +1,6 @@
 package com.techcorp.internaltoolsapi.exception;
 
-import com.techcorp.internaltoolsapi.dto.response.ApiResponse;
+import com.techcorp.internaltoolsapi.dto.response.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +17,17 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global REST exception handler responsible for:
+ * - business errors
+ * - validation errors
+ * - technical errors
+ * - resource lookup failures
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // ---------- LOGGER ---------- //
 
     private static final Logger logger =
             LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -28,13 +37,13 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException exception
     ) {
 
         logger.warn("Resource not found: {}", exception.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Resource not found",
                 exception.getMessage()
         );
@@ -49,13 +58,13 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+    public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException exception
     ) {
 
         logger.warn("Business exception: {}", exception.getMessage());
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Business validation failed",
                 exception.getMessage()
         );
@@ -70,13 +79,16 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(InvalidAnalyticsParameterException.class)
-    public ResponseEntity<ApiResponse<Void>> handleInvalidAnalyticsParameterException(
+    public ResponseEntity<ErrorResponse> handleInvalidAnalyticsParameterException(
             InvalidAnalyticsParameterException exception
     ) {
 
-        logger.warn("Invalid analytics parameter: {}", exception.getMessage());
+        logger.warn(
+                "Invalid analytics parameter: {}",
+                exception.getMessage()
+        );
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Invalid analytics parameter",
                 exception.getMessage()
         );
@@ -91,7 +103,7 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException exception
     ) {
 
@@ -107,8 +119,8 @@ public class GlobalExceptionHandler {
 
         logger.warn("Validation failed: {}", validationErrors);
 
-        ApiResponse<Void> response =
-                ApiResponse.validationError(
+        ErrorResponse response =
+                ErrorResponse.validationError(
                         "One or more fields are invalid",
                         validationErrors
                 );
@@ -119,7 +131,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             ConstraintViolationException exception
     ) {
 
@@ -135,8 +147,8 @@ public class GlobalExceptionHandler {
 
         logger.warn("Constraint violation: {}", validationErrors);
 
-        ApiResponse<Void> response =
-                ApiResponse.validationError(
+        ErrorResponse response =
+                ErrorResponse.validationError(
                         "Invalid request parameters",
                         validationErrors
                 );
@@ -151,7 +163,8 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(
+    public ResponseEntity<ErrorResponse>
+    handleMissingServletRequestParameterException(
             MissingServletRequestParameterException exception
     ) {
 
@@ -162,7 +175,7 @@ public class GlobalExceptionHandler {
 
         logger.warn("Missing request parameter: {}", message);
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Missing request parameter",
                 message
         );
@@ -177,13 +190,14 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(
+    public ResponseEntity<ErrorResponse>
+    handleHttpMessageNotReadableException(
             HttpMessageNotReadableException exception
     ) {
 
         logger.warn("Malformed JSON request");
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Malformed JSON request",
                 "Request body contains invalid or unreadable JSON"
         );
@@ -198,13 +212,13 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(TechnicalException.class)
-    public ResponseEntity<ApiResponse<Void>> handleTechnicalException(
+    public ResponseEntity<ErrorResponse> handleTechnicalException(
             TechnicalException exception
     ) {
 
         logger.error("Technical exception occurred", exception);
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Technical error",
                 exception.getMessage()
         );
@@ -219,7 +233,7 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ApiResponse<Object>>
+    public ResponseEntity<ErrorResponse>
     handleDuplicateResourceException(
             DuplicateResourceException exception
     ) {
@@ -229,8 +243,8 @@ public class GlobalExceptionHandler {
                 exception.getMessage()
         );
 
-        ApiResponse<Object> response =
-                ApiResponse.error(
+        ErrorResponse response =
+                ErrorResponse.error(
                         "Duplicate resource",
                         exception.getMessage()
                 );
@@ -241,17 +255,21 @@ public class GlobalExceptionHandler {
     }
 
     // =========================================================
-// STATIC RESOURCE / ROUTING EXCEPTIONS
-// =========================================================
+    // STATIC RESOURCE / ROUTING EXCEPTIONS
+    // =========================================================
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiResponse<Object>> handleNoResourceFoundException(
+    public ResponseEntity<ErrorResponse>
+    handleNoResourceFoundException(
             NoResourceFoundException exception
     ) {
 
-        logger.warn("Requested resource not found: {}", exception.getMessage());
+        logger.warn(
+                "Requested resource not found: {}",
+                exception.getMessage()
+        );
 
-        ApiResponse<Object> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Resource not found",
                 "Requested resource does not exist"
         );
@@ -266,13 +284,16 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(
+    public ResponseEntity<ErrorResponse> handleGenericException(
             Exception exception
     ) {
 
-        logger.error("Unexpected internal server error", exception);
+        logger.error(
+                "Unexpected internal server error",
+                exception
+        );
 
-        ApiResponse<Void> response = ApiResponse.error(
+        ErrorResponse response = ErrorResponse.error(
                 "Internal server error",
                 "An unexpected error occurred"
         );

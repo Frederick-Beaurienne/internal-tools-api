@@ -1,5 +1,6 @@
 package com.techcorp.internaltoolsapi.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 
@@ -33,8 +34,18 @@ public class ToolResponse {
 
     private Integer activeUsersCount;
 
+    @JsonFormat(
+            shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            timezone = "UTC"
+    )
     private OffsetDateTime createdAt;
 
+    @JsonFormat(
+            shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            timezone = "UTC"
+    )
     private OffsetDateTime updatedAt;
 
     // ---------- CONSTRUCTORS ---------- //
@@ -191,7 +202,7 @@ public class ToolResponse {
         this.updatedAt = updatedAt;
     }
 
-    // ---------- OBJECT METHODS ---------- //
+    // ---------- TO STRING ---------- //
 
     @Override
     public String toString() {

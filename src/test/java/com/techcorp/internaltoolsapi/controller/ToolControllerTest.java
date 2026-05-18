@@ -1,7 +1,11 @@
 package com.techcorp.internaltoolsapi.controller;
 
+import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.dto.response.PaginatedToolResponse;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
+import com.techcorp.internaltoolsapi.dto.response.metadata.PaginationMetadata;
+import com.techcorp.internaltoolsapi.dto.response.metadata.SortingMetadata;
 import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.exception.ResourceNotFoundException;
@@ -14,10 +18,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,32 +65,55 @@ class ToolControllerTest {
         );
     }
 
+    private PaginatedToolResponse createMockPaginatedResponse(
+            Map<String, Object> filtersApplied
+    ) {
+
+        return new PaginatedToolResponse(
+                List.of(createMockToolResponse()),
+                1,
+                1,
+                filtersApplied,
+                new PaginationMetadata(
+                        0,
+                        10,
+                        1,
+                        true,
+                        true
+                ),
+                new SortingMetadata(
+                        "createdAt",
+                        "desc"
+                )
+        );
+    }
+
     private String createUpdateToolRequestJson() {
 
         return """
-            {
-              "monthly_cost": 1800.00,
-              "status": "active",
-              "description": "Updated enterprise communication platform"
-            }
-            """;
+                {
+                  "monthly_cost": 1800.00,
+                  "status": "active",
+                  "description": "Updated enterprise communication platform"
+                }
+                """;
     }
 
     private String createCreateToolRequestJson() {
 
         return """
-            {
-              "name": "LinearTest",
-              "description": "Issue tracking platform",
-              "vendor": "Linear",
-              "website_url": "https://linear.app",
-              "category_id": 1,
-              "monthly_cost": 250.00,
-              "owner_department": "Engineering",
-              "status": "active",
-              "active_users_count": 40
-            }
-            """;
+                {
+                  "name": "LinearTest",
+                  "description": "Issue tracking platform",
+                  "vendor": "Linear",
+                  "website_url": "https://linear.app",
+                  "category_id": 1,
+                  "monthly_cost": 250.00,
+                  "owner_department": "Engineering",
+                  "status": "active",
+                  "active_users_count": 40
+                }
+                """;
     }
 
     // ---------- TEST GROUPS ---------- //
@@ -106,21 +134,30 @@ class ToolControllerTest {
                     null,
                     null,
                     null,
-                    null
-            )).thenReturn(List.of(createMockToolResponse()));
+                    null,
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
+            )).thenReturn(
+                    createMockPaginatedResponse(
+                            Map.of()
+                    )
+            );
 
             mockMvc.perform(get("/api/tools"))
-
-                    .andExpect(status().isOk())
-
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
 
                     .andExpect(jsonPath("$.data")
                             .isArray())
 
                     .andExpect(jsonPath("$.data.length()")
-                            .value(1));
+                            .value(1))
+
+                    .andExpect(jsonPath("$.pagination.current_page")
+                            .value(0))
+
+                    .andExpect(jsonPath("$.sorting.sort_by")
+                            .value("createdAt"));
 
             verify(toolService).getToolsWithFilters(
                     null,
@@ -129,7 +166,11 @@ class ToolControllerTest {
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
             );
         }
 
@@ -145,8 +186,16 @@ class ToolControllerTest {
                     null,
                     null,
                     null,
-                    null
-            )).thenReturn(List.of(createMockToolResponse()));
+                    null,
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
+            )).thenReturn(
+                    createMockPaginatedResponse(
+                            Map.of("category", "Development")
+                    )
+            );
 
             mockMvc.perform(
                             get("/api/tools")
@@ -155,8 +204,11 @@ class ToolControllerTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true));
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.filters_applied.category")
+                            .value("Development"));
 
             verify(toolService).getToolsWithFilters(
                     null,
@@ -165,7 +217,11 @@ class ToolControllerTest {
                     null,
                     null,
                     null,
-                    null
+                    null,
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
             );
         }
 
@@ -181,8 +237,20 @@ class ToolControllerTest {
                     null,
                     null,
                     new BigDecimal("10"),
-                    new BigDecimal("50")
-            )).thenReturn(List.of(createMockToolResponse()));
+                    new BigDecimal("50"),
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
+            )).thenReturn(
+                    createMockPaginatedResponse(
+                            Map.of(
+                                    "department", "Engineering",
+                                    "status", "active",
+                                    "category", "Development"
+                            )
+                    )
+            );
 
             mockMvc.perform(
                             get("/api/tools")
@@ -195,8 +263,17 @@ class ToolControllerTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true));
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.filters_applied.category")
+                            .value("Development"))
+
+                    .andExpect(jsonPath("$.filters_applied.department")
+                            .value("Engineering"))
+
+                    .andExpect(jsonPath("$.filters_applied.status")
+                            .value("active"));
 
             verify(toolService).getToolsWithFilters(
                     DepartmentType.Engineering,
@@ -205,7 +282,11 @@ class ToolControllerTest {
                     null,
                     null,
                     new BigDecimal("10"),
-                    new BigDecimal("50")
+                    new BigDecimal("50"),
+                    0,
+                    10,
+                    "createdAt",
+                    "desc"
             );
         }
 
@@ -221,17 +302,17 @@ class ToolControllerTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
-
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool retrieved successfully"))
-
-                    .andExpect(jsonPath("$.data.id")
+                    .andExpect(jsonPath("$.id")
                             .value(1))
 
-                    .andExpect(jsonPath("$.data.name")
-                            .value("Slack"));
+                    .andExpect(jsonPath("$.name")
+                            .value("Slack"))
+
+                    .andExpect(jsonPath("$.vendor")
+                            .value("Slack"))
+
+                    .andExpect(jsonPath("$.category")
+                            .value("Communication"));
         }
 
         @Test
@@ -250,14 +331,14 @@ class ToolControllerTest {
 
                     .andExpect(status().isNotFound())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(false))
-
                     .andExpect(jsonPath("$.error")
                             .value("Resource not found"))
 
                     .andExpect(jsonPath("$.message")
-                            .value("Tool with ID 999999 does not exist"));
+                            .value("Tool with ID 999999 does not exist"))
+
+                    .andExpect(jsonPath("$.timestamp")
+                            .exists());
         }
 
         @Test
@@ -269,14 +350,17 @@ class ToolControllerTest {
 
                     .andExpect(status().isBadRequest())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(false))
-
                     .andExpect(jsonPath("$.error")
                             .value("Validation failed"))
 
                     .andExpect(jsonPath("$.message")
-                            .value("Invalid request parameters"));
+                            .value("Invalid request parameters"))
+
+                    .andExpect(jsonPath("$.details")
+                            .exists())
+
+                    .andExpect(jsonPath("$.timestamp")
+                            .exists());
         }
     }
 
@@ -302,16 +386,16 @@ class ToolControllerTest {
                                     .content(createCreateToolRequestJson())
                     )
 
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
+                    .andExpect(jsonPath("$.name")
+                            .value("LinearTest"))
 
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool created successfully"))
+                    .andExpect(jsonPath("$.vendor")
+                            .value("Slack"))
 
-                    .andExpect(jsonPath("$.data.name")
-                            .value("LinearTest"));
+                    .andExpect(jsonPath("$.status")
+                            .value("active"));
         }
     }
 
@@ -340,14 +424,14 @@ class ToolControllerTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
+                    .andExpect(jsonPath("$.name")
+                            .value("Slack Enterprise"))
 
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool updated successfully"))
+                    .andExpect(jsonPath("$.status")
+                            .value("active"))
 
-                    .andExpect(jsonPath("$.data.name")
-                            .value("Slack Enterprise"));
+                    .andExpect(jsonPath("$.vendor")
+                            .value("Slack"));
         }
     }
 
@@ -364,16 +448,7 @@ class ToolControllerTest {
 
             mockMvc.perform(delete("/api/tools/1"))
 
-                    .andExpect(status().isOk())
-
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
-
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool deleted successfully"))
-
-                    .andExpect(jsonPath("$.data")
-                            .doesNotExist());
+                    .andExpect(status().isNoContent());
         }
 
         @Test
@@ -389,7 +464,16 @@ class ToolControllerTest {
 
             mockMvc.perform(delete("/api/tools/999999"))
 
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.error")
+                            .value("Resource not found"))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool with ID 999999 does not exist"))
+
+                    .andExpect(jsonPath("$.timestamp")
+                            .exists());
         }
     }
 }

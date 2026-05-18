@@ -42,11 +42,17 @@ class ToolIntegrationTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
-
                     .andExpect(jsonPath("$.data")
-                            .isArray());
+                            .isArray())
+
+                    .andExpect(jsonPath("$.total")
+                            .exists())
+
+                    .andExpect(jsonPath("$.pagination.current_page")
+                            .value(0))
+
+                    .andExpect(jsonPath("$.sorting.sort_by")
+                            .value("createdAt"));
         }
     }
 
@@ -79,21 +85,15 @@ class ToolIntegrationTest {
                                     .content(requestBody)
                     )
 
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
-
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool created successfully"))
-
-                    .andExpect(jsonPath("$.data.name")
+                    .andExpect(jsonPath("$.name")
                             .value("LinearTest"))
 
-                    .andExpect(jsonPath("$.data.owner_department")
+                    .andExpect(jsonPath("$.owner_department")
                             .value("Engineering"))
 
-                    .andExpect(jsonPath("$.data.status")
+                    .andExpect(jsonPath("$.status")
                             .value("active"));
         }
 
@@ -103,12 +103,12 @@ class ToolIntegrationTest {
                 throws Exception {
 
             String requestBody = """
-        {
-          "monthly_cost": 1800.00,
-          "status": "active",
-          "description": "Updated communication platform"
-        }
-        """;
+                    {
+                      "monthly_cost": 1800.00,
+                      "status": "active",
+                      "description": "Updated communication platform"
+                    }
+                    """;
 
             mockMvc.perform(
                             put("/api/tools/1")
@@ -118,17 +118,17 @@ class ToolIntegrationTest {
 
                     .andExpect(status().isOk())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
+                    .andExpect(jsonPath("$.description")
+                            .value("Updated communication platform"))
 
-                    .andExpect(jsonPath("$.data.name")
-                            .value("Slack Enterprise"))
-
-                    .andExpect(jsonPath("$.data.owner_department")
+                    .andExpect(jsonPath("$.owner_department")
                             .value("Engineering"))
 
-                    .andExpect(jsonPath("$.data.status")
-                            .value("active"));
+                    .andExpect(jsonPath("$.status")
+                            .value("active"))
+
+                    .andExpect(jsonPath("$.monthly_cost")
+                            .value(1800.00));
         }
 
         @Test
@@ -138,13 +138,7 @@ class ToolIntegrationTest {
 
             mockMvc.perform(delete("/api/tools/1"))
 
-                    .andExpect(status().isOk())
-
-                    .andExpect(jsonPath("$.success")
-                            .value(true))
-
-                    .andExpect(jsonPath("$.message")
-                            .value("Tool deleted successfully"));
+                    .andExpect(status().isNoContent());
         }
 
         @Test
@@ -156,11 +150,14 @@ class ToolIntegrationTest {
 
                     .andExpect(status().isNotFound())
 
-                    .andExpect(jsonPath("$.success")
-                            .value(false))
-
                     .andExpect(jsonPath("$.error")
-                            .value("Resource not found"));
+                            .value("Resource not found"))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool with ID 999999 does not exist"))
+
+                    .andExpect(jsonPath("$.timestamp")
+                            .exists());
         }
     }
 }

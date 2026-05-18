@@ -14,6 +14,7 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - [Database Setup](#database-setup)
 - [Run the Application](#run-the-application)
 - [Swagger Documentation](#swagger-documentation)
+- [API Response Structure](#api-response-structure)
 - [Testing](#testing)
 - [Current Progress](#current-progress)
 - [Design Choices](#design-choices)
@@ -27,10 +28,12 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - REST API for internal tools management
 - Dynamic multi-criteria filtering
 - Case-insensitive search support
-- Standardized API responses
+- REST-oriented API response contracts
+- Structured pagination and sorting metadata
+- Centralized structured error responses
 - PostgreSQL integration
 - PostgreSQL native enum mapping
-- Criteria API dynamic query building
+- Dynamic query building using Criteria API
 - OpenAPI / Swagger documentation
 - Validation & centralized error handling
 - Structured application logging
@@ -164,11 +167,67 @@ mvn spring-boot:run
 The API uses snake_case JSON naming conventions
 for request and response payload consistency.
 
+The API follows REST-oriented response semantics:
+- resource payloads are returned directly
+- validation and technical errors use structured error payloads
+- DELETE operations return HTTP 204 No Content
+
 Swagger UI:
 
 ```text
 http://localhost:8080/swagger-ui.html
 ```
+
+---
+
+# API Response Structure
+
+## Collection Responses
+
+Collection endpoints return:
+- data payload
+- applied filters metadata
+- pagination metadata
+- sorting metadata
+
+Example:
+
+```json
+{
+  "data": [],
+  "total": 20,
+  "filtered": 15,
+  "filters_applied": {},
+  "pagination": {
+    "current_page": 0,
+    "page_size": 10,
+    "total_pages": 2,
+    "first": true,
+    "last": false
+  },
+  "sorting": {
+    "sort_by": "createdAt",
+    "sort_direction": "desc"
+  }
+}
+```
+
+---
+
+## Error Responses
+
+Validation, business and technical errors
+return structured error payloads.
+
+Example:
+
+```json
+{
+  "error": "Validation failed",
+  "message": "Invalid request parameters",
+  "details": {},
+  "timestamp": "2025-08-20T14:30:00Z"
+}
 
 ---
 
@@ -216,8 +275,17 @@ The project currently includes:
 - Integration tests
 - Dynamic filtering system
 - Criteria API query specifications
-- Combined filter support
+- Combined dynamic filtering
 - Case-insensitive filtering
+- Pagination support
+- Dynamic sorting support
+- Structured pagination metadata
+- Structured sorting metadata
+- REST-oriented response contracts
+- Structured error response payloads
+- Pagination and sorting response testing
+- Structured error response validation
+- REST contract verification
 
 ## In Progress
 
@@ -326,20 +394,26 @@ Filtering behavior:
 - partial matching for tool names
 - inclusive numeric range filtering
 
-Pagination and sorting are intentionally omitted
-to keep the implementation focused on the
-technical requirements of the exercise.
+Pagination and sorting support are implemented
+using Spring Data Pageable and Sort abstractions.
 
-This ensures:
-- atomic database operations
-- automatic rollback on runtime exceptions
-- consistent business state management
+Sorting fields are intentionally restricted
+through a controlled whitelist in order to:
+- preserve API contract stability
+- avoid unsupported property access
+- prevent exposing unintended internal fields
+
+The filtering system supports:
+- optional combinable filters
+- case-insensitive text matching
+- partial name search
+- inclusive numeric range filtering
+- pageable query execution
 
 ---
 
 # Future Improvements
 
-- Pagination & sorting
 - Advanced search capabilities
 - Advanced analytics endpoints
 - Authentication / authorization
