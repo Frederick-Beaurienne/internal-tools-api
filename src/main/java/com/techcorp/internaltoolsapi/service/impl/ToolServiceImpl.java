@@ -1,6 +1,7 @@
 package com.techcorp.internaltoolsapi.service.impl;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.Category;
 import com.techcorp.internaltoolsapi.entity.Tool;
@@ -10,6 +11,7 @@ import com.techcorp.internaltoolsapi.mapper.ToolMapper;
 import com.techcorp.internaltoolsapi.repository.CategoryRepository;
 import com.techcorp.internaltoolsapi.repository.ToolRepository;
 import com.techcorp.internaltoolsapi.service.ToolService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,8 +52,7 @@ public class ToolServiceImpl
 
         logger.info("Retrieving all tools");
 
-        List<Tool> tools =
-                toolRepository.findAll();
+        List<Tool> tools = toolRepository.findAll();
 
         return tools.stream()
                 .map(ToolMapper::toResponse)
@@ -59,9 +60,7 @@ public class ToolServiceImpl
     }
 
     @Override
-    public ToolResponse getToolById(
-            Integer id
-    ) {
+    public ToolResponse getToolById(Integer id) {
 
         logger.info(
                 "Retrieving tool with id: {}",
@@ -70,63 +69,103 @@ public class ToolServiceImpl
 
         Tool tool = toolRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Tool with ID "
-                                        + id
-                                        + " does not exist"
-                        )
+                        new ResourceNotFoundException("Tool with ID " + id + " does not exist")
                 );
 
         return ToolMapper.toResponse(tool);
     }
 
+    @Transactional
     @Override
     public ToolResponse createTool(
             CreateToolRequest request
     ) {
 
-        logger.info(
-                "Creating tool with name: {}",
-                request.getName()
-        );
+        logger.info("Creating tool with name: {}", request.getName());
 
-        if (toolRepository.existsByNameIgnoreCase(
-                request.getName()
-        )) {
+        if (toolRepository.existsByNameIgnoreCase(request.getName())) {
 
-            throw new DuplicateResourceException(
-                    "A tool with this name already exists"
-            );
+            throw new DuplicateResourceException("A tool with this name already exists");
         }
 
         Category category =
                 categoryRepository.findById(
                                 request.getCategoryId()
                         )
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
+                        .orElseThrow(() -> new ResourceNotFoundException(
                                         "Category with ID "
                                                 + request.getCategoryId()
                                                 + " does not exist"
                                 )
                         );
 
-        Tool tool =
-                ToolMapper.toEntity(
-                        request,
-                        category
+        Tool tool = ToolMapper.toEntity(request, category);
+
+        Tool savedTool = toolRepository.save(tool);
+
+        logger.info("Tool created successfully with id: {}", savedTool.getId());
+
+        return ToolMapper.toResponse(savedTool);
+    }
+
+    @Transactional
+    @Override
+    public ToolResponse updateTool(
+            Integer id,
+            UpdateToolRequest request
+    ) {
+
+        logger.info("Updating tool with id: {}", id);
+
+        Tool tool = toolRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tool with ID " + id + " does not exist"
+                        )
                 );
 
-        Tool savedTool =
-                toolRepository.save(tool);
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Category with ID "
+                                        + request.getCategoryId()
+                                        + " does not exist"
+                        )
+                );
+
+        boolean nameAlreadyExists = toolRepository.existsByNameIgnoreCase(request.getName());
+
+        if (nameAlreadyExists && !tool.getName().equalsIgnoreCase(request.getName())) {
+
+            throw new DuplicateResourceException("A tool with this name already exists");
+        }
+
+        ToolMapper.updateEntity(tool, request, category);
+        Tool updatedTool = toolRepository.save(tool);
 
         logger.info(
-                "Tool created successfully with id: {}",
-                savedTool.getId()
+                "Tool updated successfully with id: {}",
+                updatedTool.getId()
         );
 
-        return ToolMapper.toResponse(
-                savedTool
-        );
+        return ToolMapper.toResponse(updatedTool);
+    }
+
+    @Transactional
+    @Override
+    public void deleteTool(Integer id) {
+
+        logger.info("Deleting tool with id: {}", id);
+
+        Tool tool = toolRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tool with ID " + id + " does not exist"
+                        )
+                );
+
+        toolRepository.delete(tool);
+
+        logger.info("Tool deleted successfully with id: {}", id);
     }
 }

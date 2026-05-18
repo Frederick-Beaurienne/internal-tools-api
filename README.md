@@ -31,8 +31,10 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - OpenAPI / Swagger documentation
 - Validation & centralized error handling
 - Structured application logging
+- Transactional service layer
 - REST controller testing
 - Integration testing
+- Full CRUD REST endpoints
 - Dockerized database environment
 - Layered architecture
 
@@ -178,7 +180,9 @@ The project currently includes:
 
 - REST controller tests using `@WebMvcTest`
 - Integration tests using `@SpringBootTest`
-- Validation and error handling tests
+- Validation and exception handling tests
+- CRUD endpoint workflow testing
+- PostgreSQL enum integration testing
 - API response contract verification
 
 ---
@@ -198,15 +202,14 @@ The project currently includes:
 - PostgreSQL native enum integration
 - DTO / mapper architecture
 - Service and repository layers
-- REST GET and POST endpoints
+- Transactional business services
+- Full CRUD REST endpoints
 - REST controller tests
 - Integration tests
 
 ## In Progress
 
-- PUT and DELETE endpoints
 - Analytics endpoints
-- DTO mapping refinement
 
 ---
 
@@ -278,11 +281,24 @@ The project intentionally avoids excessive code generation tools such as Lombok 
 - readable object structure
 - maintainable enterprise-style Java code
 
+## Transaction Management
+
+Business write operations are handled within transactional service methods using:
+
+```java
+@Transactional
+```
+
+This ensures:
+- atomic database operations
+- automatic rollback on runtime exceptions
+- consistent business state management
+
 ---
 
 # Future Improvements
 
-- Complete CRUD operations
+- Advanced CRUD filtering capabilities
 - Pagination & filtering
 - Advanced analytics endpoints
 - Authentication / authorization

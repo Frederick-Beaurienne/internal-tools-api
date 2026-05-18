@@ -2,6 +2,7 @@ package com.techcorp.internaltoolsapi.integration;
 
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,8 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,66 +27,146 @@ class ToolIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // ---------- TESTS ---------- //
+    // ---------- TEST GROUPS ---------- //
 
-    @Test
-    @DisplayName("Doit récupérer les outils depuis la vraie base PostgreSQL")
-    void shouldRetrieveToolsFromRealDatabase()
-            throws Exception {
+    @Nested
+    @DisplayName("Read operations tests")
+    class ReadOperationsTests {
 
-        mockMvc.perform(
-                        get("/api/tools")
-                )
+        @Test
+        @DisplayName("Should retrieve tools from real PostgreSQL database")
+        void shouldRetrieveToolsFromRealDatabase()
+                throws Exception {
 
-                .andExpect(status().isOk())
+            mockMvc.perform(get("/api/tools"))
 
-                .andExpect(jsonPath("$.success")
-                        .value(true))
+                    .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$.data")
-                        .isArray());
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.data")
+                            .isArray());
+        }
     }
 
-    @Test
-    @DisplayName("Should create tool using PostgreSQL enums")
-    void shouldCreateTool()
-            throws Exception {
+    @Nested
+    @DisplayName("Write operations tests")
+    class WriteOperationsTests {
 
-        String requestBody = """
-                {
-                  "name": "LinearTest",
-                  "description": "Issue tracking platform",
-                  "vendor": "Linear",
-                  "websiteUrl": "https://linear.app",
-                  "categoryId": 1,
-                  "monthlyCost": 250.00,
-                  "ownerDepartment": "Engineering",
-                  "status": "active",
-                  "activeUsersCount": 40
-                }
-                """;
+        @Test
+        @DisplayName("Should create tool using PostgreSQL enums")
+        void shouldCreateTool()
+                throws Exception {
 
-        mockMvc.perform(
-                        post("/api/tools")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
+            String requestBody = """
+                    {
+                      "name": "LinearTest",
+                      "description": "Issue tracking platform",
+                      "vendor": "Linear",
+                      "websiteUrl": "https://linear.app",
+                      "categoryId": 1,
+                      "monthlyCost": 250.00,
+                      "ownerDepartment": "Engineering",
+                      "status": "active",
+                      "activeUsersCount": 40
+                    }
+                    """;
 
-                .andExpect(status().isOk())
+            mockMvc.perform(
+                            post("/api/tools")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(requestBody)
+                    )
 
-                .andExpect(jsonPath("$.success")
-                        .value(true))
+                    .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$.message")
-                        .value("Tool created successfully"))
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
 
-                .andExpect(jsonPath("$.data.name")
-                        .value("LinearTest"))
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool created successfully"))
 
-                .andExpect(jsonPath("$.data.ownerDepartment")
-                        .value("Engineering"))
+                    .andExpect(jsonPath("$.data.name")
+                            .value("LinearTest"))
 
-                .andExpect(jsonPath("$.data.status")
-                        .value("active"));
+                    .andExpect(jsonPath("$.data.ownerDepartment")
+                            .value("Engineering"))
+
+                    .andExpect(jsonPath("$.data.status")
+                            .value("active"));
+        }
+
+        @Test
+        @DisplayName("Should update tool using PostgreSQL enums")
+        void shouldUpdateTool()
+                throws Exception {
+
+            String requestBody = """
+                    {
+                      "name": "Slack Enterprise",
+                      "description": "Updated communication platform",
+                      "vendor": "Slack",
+                      "websiteUrl": "https://slack.com",
+                      "categoryId": 1,
+                      "monthlyCost": 1800.00,
+                      "ownerDepartment": "Engineering",
+                      "status": "active",
+                      "activeUsersCount": 220
+                    }
+                    """;
+
+            mockMvc.perform(
+                            put("/api/tools/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(requestBody)
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.data.name")
+                            .value("Slack Enterprise"))
+
+                    .andExpect(jsonPath("$.data.ownerDepartment")
+                            .value("Engineering"))
+
+                    .andExpect(jsonPath("$.data.status")
+                            .value("active"));
+        }
+
+        @Test
+        @DisplayName("Should delete tool from PostgreSQL database")
+        void shouldDeleteTool()
+                throws Exception {
+
+            mockMvc.perform(delete("/api/tools/1"))
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool deleted successfully"));
+        }
+
+        @Test
+        @DisplayName("Should return 404 when deleting unknown tool")
+        void shouldReturn404WhenDeletingUnknownTool()
+                throws Exception {
+
+            mockMvc.perform(delete("/api/tools/999999"))
+
+                    .andExpect(status().isNotFound())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(false))
+
+                    .andExpect(jsonPath("$.error")
+                            .value("Resource not found"));
+        }
     }
 }

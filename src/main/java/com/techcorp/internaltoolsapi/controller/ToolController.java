@@ -1,6 +1,7 @@
 package com.techcorp.internaltoolsapi.controller;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ApiResponse;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.service.ToolService;
@@ -148,6 +149,75 @@ public class ToolController {
         return ApiResponse.success(
                 createdTool,
                 "Tool created successfully"
+        );
+    }
+
+    /**
+     * Updates an existing internal tool.
+     *
+     * @param id tool ID
+     * @param request update payload
+     * @return updated tool response
+     */
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "Update an existing tool",
+            description = """
+                Updates an existing internal SaaS tool.
+
+                The endpoint validates:
+                - tool existence
+                - unique tool name
+                - category existence
+                - required fields
+                - enum values
+                """
+    )
+    public ApiResponse<ToolResponse> updateTool(
+            @PathVariable
+            @Positive(message = "Tool ID must be positive")
+            Integer id,
+
+            @Valid
+            @RequestBody
+            UpdateToolRequest request
+    ) {
+
+        ToolResponse updatedTool = toolService.updateTool(id, request);
+
+        return ApiResponse.success(
+                updatedTool,
+                "Tool updated successfully"
+        );
+    }
+
+    /**
+     * Deletes an existing internal tool.
+     *
+     * @param id tool ID
+     * @return success response
+     */
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Delete an existing tool",
+            description = """
+                Deletes an internal SaaS tool.
+
+                The endpoint validates:
+                - tool existence
+                """
+    )
+    public ApiResponse<Object> deleteTool(
+            @PathVariable
+            @Positive(message = "Tool ID must be positive")
+            Integer id
+    ) {
+
+        toolService.deleteTool(id);
+
+        return ApiResponse.success(
+                null,
+                "Tool deleted successfully"
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.techcorp.internaltoolsapi.mapper;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.Category;
 import com.techcorp.internaltoolsapi.entity.Tool;
@@ -66,5 +67,29 @@ public final class ToolMapper {
         tool.setActiveUsersCount(request.getActiveUsersCount());
 
         return tool;
+    }
+
+    /**
+     * Updates an existing tool entity from request DTO.
+     *
+     * @param tool existing tool entity
+     * @param request update request
+     * @param category resolved category entity
+     */
+    public static void updateEntity(
+            Tool tool,
+            UpdateToolRequest request,
+            Category category
+    ) {
+
+        tool.setName(request.getName());
+        tool.setDescription(request.getDescription());
+        tool.setVendor(request.getVendor());
+        tool.setWebsiteUrl(request.getWebsiteUrl());
+        tool.setCategory(category);
+        tool.setMonthlyCost(request.getMonthlyCost());
+        tool.setOwnerDepartment(request.getOwnerDepartment());
+        tool.setStatus(request.getStatus());
+        tool.setActiveUsersCount(request.getActiveUsersCount());
     }
 }

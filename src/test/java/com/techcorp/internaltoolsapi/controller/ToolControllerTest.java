@@ -1,5 +1,6 @@
 package com.techcorp.internaltoolsapi.controller;
 
+import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.entity.enums.ToolStatusType;
@@ -10,15 +11,18 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
+import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,25 +60,55 @@ class ToolControllerTest {
         );
     }
 
+    private String createUpdateToolRequestJson() {
+
+        return """
+                {
+                  "name": "Slack Enterprise",
+                  "description": "Updated enterprise communication platform",
+                  "vendor": "Slack",
+                  "websiteUrl": "https://slack.com",
+                  "categoryId": 1,
+                  "monthlyCost": 1800.00,
+                  "ownerDepartment": "Engineering",
+                  "status": "active",
+                  "activeUsersCount": 220
+                }
+                """;
+    }
+
+    private String createCreateToolRequestJson() {
+
+        return """
+            {
+              "name": "LinearTest",
+              "description": "Issue tracking platform",
+              "vendor": "Linear",
+              "websiteUrl": "https://linear.app",
+              "categoryId": 1,
+              "monthlyCost": 250.00,
+              "ownerDepartment": "Engineering",
+              "status": "active",
+              "activeUsersCount": 40
+            }
+            """;
+    }
+
     // ---------- TEST GROUPS ---------- //
 
     @Nested
-    @DisplayName("Tests API de récupération des outils")
-    class GetToolsApiTests {
+    @DisplayName("GET endpoints tests")
+    class GetEndpointsTests {
 
         @Test
-        @DisplayName("Doit retourner tous les outils")
+        @DisplayName("Should return all tools")
         void shouldReturnAllTools()
                 throws Exception {
 
             when(toolService.getAllTools())
-                    .thenReturn(
-                            List.of(createMockToolResponse())
-                    );
+                    .thenReturn(List.of(createMockToolResponse()));
 
-            mockMvc.perform(
-                            get("/api/tools")
-                    )
+            mockMvc.perform(get("/api/tools"))
 
                     .andExpect(status().isOk())
 
@@ -92,18 +126,14 @@ class ToolControllerTest {
         }
 
         @Test
-        @DisplayName("Doit retourner un outil par son ID")
+        @DisplayName("Should return tool by ID")
         void shouldReturnToolById()
                 throws Exception {
 
             when(toolService.getToolById(1))
-                    .thenReturn(
-                            createMockToolResponse()
-                    );
+                    .thenReturn(createMockToolResponse());
 
-            mockMvc.perform(
-                            get("/api/tools/1")
-                    )
+            mockMvc.perform(get("/api/tools/1"))
 
                     .andExpect(status().isOk())
 
@@ -121,7 +151,7 @@ class ToolControllerTest {
         }
 
         @Test
-        @DisplayName("Doit retourner une erreur 404 si l'outil est introuvable")
+        @DisplayName("Should return 404 when tool does not exist")
         void shouldReturn404WhenToolDoesNotExist()
                 throws Exception {
 
@@ -132,9 +162,7 @@ class ToolControllerTest {
                             )
                     );
 
-            mockMvc.perform(
-                            get("/api/tools/999999")
-                    )
+            mockMvc.perform(get("/api/tools/999999"))
 
                     .andExpect(status().isNotFound())
 
@@ -149,13 +177,11 @@ class ToolControllerTest {
         }
 
         @Test
-        @DisplayName("Doit retourner une erreur 400 pour un ID invalide")
+        @DisplayName("Should return 400 for invalid ID")
         void shouldReturn400ForInvalidId()
                 throws Exception {
 
-            mockMvc.perform(
-                            get("/api/tools/-1")
-                    )
+            mockMvc.perform(get("/api/tools/-1"))
 
                     .andExpect(status().isBadRequest())
 
@@ -167,6 +193,119 @@ class ToolControllerTest {
 
                     .andExpect(jsonPath("$.message")
                             .value("Invalid request parameters"));
+        }
+    }
+
+    @Nested
+    @DisplayName("POST endpoints tests")
+    class CreateEndpointsTests {
+
+        @Test
+        @DisplayName("Should create a new tool")
+        void shouldCreateTool()
+                throws Exception {
+
+            ToolResponse createdTool = createMockToolResponse();
+            createdTool.setName("LinearTest");
+
+            when(toolService.createTool(
+                    any(CreateToolRequest.class)
+            )).thenReturn(createdTool);
+
+            mockMvc.perform(
+                            post("/api/tools")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(createCreateToolRequestJson())
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool created successfully"))
+
+                    .andExpect(jsonPath("$.data.name")
+                            .value("LinearTest"));
+        }
+    }
+
+    @Nested
+    @DisplayName("PUT endpoints tests")
+    class UpdateEndpointsTests {
+
+        @Test
+        @DisplayName("Should update an existing tool")
+        void shouldUpdateTool()
+                throws Exception {
+
+            ToolResponse updatedTool = createMockToolResponse();
+            updatedTool.setName("Slack Enterprise");
+
+            when(toolService.updateTool(
+                    eq(1),
+                    any(UpdateToolRequest.class)
+            )).thenReturn(updatedTool);
+
+            mockMvc.perform(
+                            put("/api/tools/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(createUpdateToolRequestJson())
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool updated successfully"))
+
+                    .andExpect(jsonPath("$.data.name")
+                            .value("Slack Enterprise"));
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE endpoints tests")
+    class DeleteEndpointsTests {
+        @Test
+        @DisplayName("Should delete an existing tool")
+        void shouldDeleteTool()
+                throws Exception {
+
+            doNothing().when(toolService)
+                    .deleteTool(1);
+
+            mockMvc.perform(delete("/api/tools/1"))
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.success")
+                            .value(true))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Tool deleted successfully"))
+
+                    .andExpect(jsonPath("$.data")
+                            .doesNotExist());
+        }
+
+        @Test
+        @DisplayName("Should return 404 when deleting unknown tool")
+        void shouldReturn404WhenDeletingUnknownTool()
+                throws Exception {
+
+            doThrow(
+                    new ResourceNotFoundException(
+                            "Tool with ID 999999 does not exist"
+                    )
+            ).when(toolService).deleteTool(999999);
+
+            mockMvc.perform(delete("/api/tools/999999"))
+
+                    .andExpect(status().isNotFound());
         }
     }
 }

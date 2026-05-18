@@ -1,6 +1,7 @@
 package com.techcorp.internaltoolsapi.service;
 
 import com.techcorp.internaltoolsapi.dto.request.CreateToolRequest;
+import com.techcorp.internaltoolsapi.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.dto.response.ToolResponse;
 
 import java.util.List;
@@ -36,4 +37,20 @@ public interface ToolService {
     ToolResponse createTool(
             CreateToolRequest request
     );
+
+    /**
+     * Updates an existing tool.
+     *
+     * @param id tool ID
+     * @param request update payload
+     * @return updated tool response
+     */
+    ToolResponse updateTool(Integer id, UpdateToolRequest request);
+
+    /**
+     * Deletes an existing tool.
+     *
+     * @param id tool ID
+     */
+    void deleteTool(Integer id);
 }
