@@ -2,15 +2,14 @@ package com.techcorp.internaltoolsapi.tools.mapper;
 
 import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
+import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
 import com.techcorp.internaltoolsapi.tools.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.tools.entity.Category;
 import com.techcorp.internaltoolsapi.tools.entity.Tool;
 import com.techcorp.internaltoolsapi.tools.entity.enums.ToolStatusType;
-import com.techcorp.internaltoolsapi.tools.dto.response.ToolDetailsResponse;
-import com.techcorp.internaltoolsapi.analytics.dto.response.UsageMetricsResponse;
-import com.techcorp.internaltoolsapi.analytics.dto.response.UsagePeriodMetricsResponse;
 
 import java.math.BigDecimal;
+
 /**
  * Mapper responsible for tool DTO conversions.
  */
@@ -103,23 +102,6 @@ public final class ToolMapper {
             );
         }
 
-        // ---------- MOCK USAGE METRICS ---------- //
-
-        UsagePeriodMetricsResponse last30Days =
-                new UsagePeriodMetricsResponse(
-                        127,
-                        45
-                );
-
-        UsageMetricsResponse usageMetrics =
-                new UsageMetricsResponse(
-                        last30Days
-                );
-
-        response.setUsageMetrics(
-                usageMetrics
-        );
-
         return response;
     }
 
@@ -161,8 +143,8 @@ public final class ToolMapper {
      * Updates an existing tool entity from request DTO.
      * Only provided fields are updated.
      *
-     * @param tool existing tool entity
-     * @param request update request
+     * @param tool     existing tool entity
+     * @param request  update request
      * @param category resolved category entity
      */
     public static void updateEntity(

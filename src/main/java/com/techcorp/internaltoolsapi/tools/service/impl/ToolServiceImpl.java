@@ -1,5 +1,6 @@
 package com.techcorp.internaltoolsapi.tools.service.impl;
 
+import com.techcorp.internaltoolsapi.analytics.service.AnalyticsService;
 import com.techcorp.internaltoolsapi.tools.dto.request.CreateToolRequest;
 import com.techcorp.internaltoolsapi.tools.dto.request.UpdateToolRequest;
 import com.techcorp.internaltoolsapi.tools.dto.response.PaginatedToolResponse;
@@ -41,6 +42,9 @@ import java.util.Map;
 public class ToolServiceImpl
         implements ToolService {
 
+    // ---------- DEPENDENCIES ---------- //
+
+    private final AnalyticsService analyticsService;
     private final CategoryRepository categoryRepository;
 
     // ---------- ATTRIBUTES ---------- //
@@ -54,11 +58,13 @@ public class ToolServiceImpl
 
     public ToolServiceImpl(
             ToolRepository toolRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            AnalyticsService analyticsService
     ) {
 
         this.toolRepository = toolRepository;
         this.categoryRepository = categoryRepository;
+        this.analyticsService = analyticsService;
     }
 
     // ---------- BUSINESS METHODS ---------- //
@@ -150,7 +156,16 @@ public class ToolServiceImpl
                         new ResourceNotFoundException("Tool with ID " + id + " does not exist")
                 );
 
-        return ToolMapper.toDetailsResponse(tool);
+        ToolDetailsResponse response =
+                ToolMapper.toDetailsResponse(tool);
+
+        response.setUsageMetrics(
+                analyticsService.getUsageMetrics(
+                        tool.getId()
+                )
+        );
+        
+        return response;
     }
 
     @Transactional

@@ -43,6 +43,7 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - Full CRUD REST endpoints
 - Dockerized database environment
 - Layered architecture
+- Real usage metrics aggregation
 
 ---
 
@@ -299,10 +300,11 @@ The project currently includes:
 - Pagination and sorting response testing
 - Structured error response validation
 - REST contract verification
+- Real usage analytics aggregation
 
 ## In Progress
 
-- Analytics endpoints
+- Advanced analytics and reporting endpoints
 
 ---
 
@@ -422,6 +424,21 @@ The filtering system supports:
 - partial name search
 - inclusive numeric range filtering
 - pageable query execution
+
+## Analytics Architecture
+
+Analytics responsibilities are intentionally isolated
+from the main business domain.
+
+The `analytics` module acts as a read-oriented layer
+responsible for reporting and usage aggregation logic,
+while the `tools` module remains the primary business domain.
+
+This separation was chosen to:
+- preserve separation of concerns
+- avoid polluting core CRUD business logic
+- prepare future analytical features
+- keep reporting logic modular and extensible
 
 ---
 
