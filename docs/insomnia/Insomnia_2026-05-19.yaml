@@ -1,0 +1,655 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: internal-tools-api
+meta:
+  id: wrk_312c8393f21946e9879eb2d4f0e8e41c
+  created: 1779094875226
+  modified: 1779094875226
+  description: ""
+collection:
+  - name: tools
+    meta:
+      id: fld_ad842812b0ba48ceaf32d4e66a764f41
+      created: 1779099005667
+      modified: 1779099005667
+      sortKey: -1779099005667
+      description: ""
+    children:
+      - url: http://localhost:8080/api/tools
+        name: Get All Tools
+        meta:
+          id: req_15ce7f77048b4c84b0d8fafd18ebe066
+          created: 1779099092749
+          modified: 1779099296423
+          isPrivate: false
+          description: ""
+          sortKey: -1779099092749
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/1
+        name: Get Tool By ID
+        meta:
+          id: req_a09eee2a25e542d9b96271d2a3d9c118
+          created: 1779099172904
+          modified: 1779099185424
+          isPrivate: false
+          description: ""
+          sortKey: -1778978880844
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/999999
+        name: Get Missing Tool
+        meta:
+          id: req_49521e61a6e64c278cf9f51df7c8dc63
+          created: 1779099213223
+          modified: 1779099220844
+          isPrivate: false
+          description: ""
+          sortKey: -1778918774891.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/-1
+        name: Get Tool Invalid ID
+        meta:
+          id: req_23bfe76f2e0f4de29b9391a77437167d
+          created: 1779099231756
+          modified: 1779099239850
+          isPrivate: false
+          description: ""
+          sortKey: -1778888721915.25
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools
+        name: Create Tool
+        meta:
+          id: req_16b8496862e84b8bb1df9a2966aec829
+          created: 1779102581842
+          modified: 1779114481974
+          isPrivate: false
+          description: ""
+          sortKey: -1778873695427.125
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Notion2",
+              "description": "Collaborative workspace platform",
+              "vendor": "Notion",
+              "website_url": "https://notion.so",
+              "category_id": 1,
+              "monthly_cost": 500.00,
+              "owner_department": "Engineering",
+              "status": "active",
+              "active_users_count": 75
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/1
+        name: Update Tool
+        meta:
+          id: req_acd6531ee04e479fae25438726462a63
+          created: 1779109571385
+          modified: 1779114470905
+          isPrivate: false
+          description: ""
+          sortKey: -1778866182183.0625
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 1800.00,
+              "status": "active",
+              "description": "Updated enterprise communication platform"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/55
+        name: Delete Tool
+        meta:
+          id: req_760f9cedfc2e49deb235b31fe385924c
+          created: 1779110626009
+          modified: 1779127825777
+          isPrivate: false
+          description: ""
+          sortKey: -1778862425561.0312
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Specification Examples
+    meta:
+      id: fld_e6ec506a7dd446b5a362a44a86388ba9
+      created: 1779111988281
+      modified: 1779111988281
+      sortKey: -1779111988281
+      description: ""
+    children:
+      - url: http://localhost:8080/api/tools
+        name: List Tools
+        meta:
+          id: req_e3a978f8421a40e9966e68bb355ae197
+          created: 1779112032845
+          modified: 1779112434347
+          isPrivate: false
+          description: ""
+          sortKey: -1779112040898
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools?department=Engineering&status=active
+        name: Filter Tools By Department
+        meta:
+          id: req_07cfbf3b9e3f448a9dedbbfc01f4f0b3
+          created: 1779112093993
+          modified: 1779112435930
+          isPrivate: false
+          description: ""
+          sortKey: -1779105566823.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools?min_cost=10&max_cost=50&category=Development
+        name: Filter Tools By Cost
+        meta:
+          id: req_be6f5d68f25b43b4b637d221d85ef27f
+          created: 1779112128573
+          modified: 1779112146359
+          isPrivate: false
+          description: ""
+          sortKey: -1779102329786.25
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/5
+        name: Tool Details
+        meta:
+          id: req_a9376be43f344e80b814bfef938ec814
+          created: 1779112166548
+          modified: 1779128763963
+          isPrivate: false
+          description: ""
+          sortKey: -1779100711267.625
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools
+        name: Create Tool
+        meta:
+          id: req_6d72ab6678714ea7b38695233291d02b
+          created: 1779112237783
+          modified: 1779127557245
+          isPrivate: false
+          description: ""
+          sortKey: -1779099902008.3125
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Linear",
+              "description": "Issue tracking and project management",
+              "vendor": "Linear", 
+              "website_url": "https://linear.app",
+              "category_id": 2,
+              "monthly_cost": 8.00,
+              "owner_department": "Engineering"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/tools/5
+        name: Update Tool
+        meta:
+          id: req_2b729ae1281e488d9dac404c9f1161f8
+          created: 1779112309272
+          modified: 1779127642303
+          isPrivate: false
+          description: ""
+          sortKey: -1779099497378.6562
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/department-costs
+        name: Analytics - Department Costs - Default
+        meta:
+          id: req_9c3ae1f7b10447a886f3c5bb46387272
+          created: 1779181990189
+          modified: 1779190461244
+          isPrivate: false
+          description: ""
+          sortKey: -1779099295063.8281
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/department-costs
+        name: Analytics - Department Costs - Sorted
+        meta:
+          id: req_2d75f60ebcd948e7a55b7c41e5f36c06
+          created: 1779182045734
+          modified: 1779189749852
+          isPrivate: false
+          description: ""
+          sortKey: -1779099193906.414
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: sort_by
+            value: total_cost
+            description: ""
+            disabled: false
+          - name: order
+            value: desc
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/department-costs
+        name: Analytics - Department Costs - invalid
+        meta:
+          id: req_60d1054898bd47e0b986e91379d9bc08
+          created: 1779185904639
+          modified: 1779186494147
+          isPrivate: false
+          description: ""
+          sortKey: -1779099143327.707
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: sort_by
+            value: banana
+            description: ""
+            disabled: false
+          - name: order
+            value: potato
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/expensive-tools
+        name: Analytics - Expensive Tools - Default
+        meta:
+          id: req_cc153e3900d14e9cbcb72f768e9b8a8e
+          created: 1779196916802
+          modified: 1779196997295
+          isPrivate: false
+          description: ""
+          sortKey: -1779099118038.3535
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/expensive-tools
+        name: Analytics - Expensive Tools - limit=10
+        meta:
+          id: req_447ba2bef62d4ab19bb03f466fa34a50
+          created: 1779197026834
+          modified: 1779197131492
+          isPrivate: false
+          description: ""
+          sortKey: -1779099105393.6768
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: limit
+            value: "10"
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/expensive-tools
+        name: Analytics - Expensive Tools - min_cost=50 limit=5
+        meta:
+          id: req_1f8bb8c0587b4432984efeb57bec165d
+          created: 1779197179217
+          modified: 1779197304409
+          isPrivate: false
+          description: ""
+          sortKey: -1779099099071.3384
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: min_cost
+            value: "50"
+            description: ""
+            disabled: false
+          - name: limit
+            value: "5"
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8080/api/analytics/expensive-tools
+        name: Analytics - Expensive Tools - Invalid Limit
+        meta:
+          id: req_344aaadd20b342c0829fd1edd46c0101
+          created: 1779197245654
+          modified: 1779197258989
+          isPrivate: false
+          description: ""
+          sortKey: -1779099095910.1692
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: limit
+            value: "-5"
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_fb5287582d1d9b22613e0bf019fb0ec9acd9dbce
+    created: 1779094875228
+    modified: 1779094875228
+environments:
+  name: Base Environment
+  meta:
+    id: env_fb5287582d1d9b22613e0bf019fb0ec9acd9dbce
+    created: 1779094875227
+    modified: 1779094875227
+    isPrivate: false

@@ -14,6 +14,7 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - [Database Setup](#database-setup)
 - [Run the Application](#run-the-application)
 - [Swagger Documentation](#swagger-documentation)
+- [Insomnia Collection](#insomnia-collection)
 - [API Response Structure](#api-response-structure)
 - [Testing](#testing)
 - [Current Progress](#current-progress)
@@ -54,6 +55,7 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - Cost optimization insights
 - Database-driven analytics filtering
 - Efficiency rating analytics
+- Insomnia API collection export
 
 ---
 
@@ -199,6 +201,33 @@ Swagger UI:
 
 ```text
 http://localhost:8080/swagger-ui.html
+```
+
+---
+
+# Insomnia Collection
+
+An Insomnia export collection is provided
+to simplify API exploration and testing.
+
+Location:
+
+```text
+docs/insomnia/
+```
+
+The collection includes:
+
+- CRUD endpoints
+- filtering examples
+- analytics endpoints
+- validation scenarios
+- documented test requests
+
+Import into Insomnia using:
+
+```text
+Application → Import → From File
 ```
 
 ---
