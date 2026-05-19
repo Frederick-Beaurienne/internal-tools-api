@@ -49,6 +49,11 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - Company budget aggregation
 - Defensive analytics sorting
 - Empty analytics dataset handling
+- Expensive tools analytics
+- Company-wide cost efficiency benchmark
+- Cost optimization insights
+- Database-driven analytics filtering
+- Efficiency rating analytics
 
 ---
 
@@ -275,6 +280,10 @@ The project currently includes:
 - Analytics sorting validation
 - Analytics error handling validation
 - Empty analytics scenario verification
+- Analytics filtering and limit validation
+- Analytics optimization workflow testing
+- Structured analytics validation errors
+- Expensive tools endpoint verification
 
 ---
 
@@ -450,6 +459,32 @@ This separation was chosen to:
 - prepare future analytical features
 - keep reporting logic modular and extensible
 
+## Database-Driven Analytics Strategy
+
+Analytics queries intentionally prioritize
+database-level computation whenever possible.
+
+This approach was chosen to:
+
+- reduce unnecessary data transfer
+  between database and backend
+- avoid loading large datasets
+  only to aggregate them in Java
+- leverage PostgreSQL aggregation
+  and sorting capabilities
+- preserve scalability for future
+  analytics growth
+
+Business aggregation, filtering and
+sorting are therefore primarily pushed
+to the database layer, while Java
+focuses on:
+
+- orchestration
+- response composition
+- controlled rounding
+- defensive contract preservation
+
 ## Department Cost Analytics Strategy
 
 The `/api/analytics/department-costs`
@@ -493,6 +528,55 @@ This approach was chosen to:
 - maintain stable response contracts
 - expose predictable analytical behavior
 - support future reporting expansion
+
+## Expensive Tools Analytics Strategy
+
+The `/api/analytics/expensive-tools`
+endpoint follows an optimization-oriented
+analytics strategy.
+
+The endpoint is designed to surface
+potentially expensive or inefficient tools
+while preserving stable analytical
+contracts.
+
+Implemented rules:
+
+- only active tools are included
+- filtering and result limiting are executed
+  at database level
+- expensive tools are ordered by
+  monthly cost descending
+- cost-per-user calculations use
+  controlled rounding through
+  `NumericService`
+- company benchmark uses a weighted
+  enterprise-wide calculation:
+
+```text
+SUM(monthly_cost)
+/
+SUM(active_users_count)
+```
+
+- tools with zero users are excluded
+  from benchmark calculation
+- tools with zero users receive
+  `not_applicable`
+  efficiency rating
+- empty analytics datasets return
+  explicit business-oriented responses
+
+This approach was chosen to:
+
+- preserve analytical consistency
+- avoid benchmark distortion
+- reduce unnecessary database/backend
+  data transfer
+- leverage PostgreSQL filtering
+  and sorting capabilities
+- support future optimization
+  and reporting features
 
 ---
 

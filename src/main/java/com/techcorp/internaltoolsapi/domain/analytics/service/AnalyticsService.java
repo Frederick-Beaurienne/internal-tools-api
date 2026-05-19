@@ -2,12 +2,17 @@ package com.techcorp.internaltoolsapi.domain.analytics.service;
 
 
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsageMetricsResponse;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 /**
  * Service responsible for analytics,
  * reporting and cost optimization logic.
  */
+@Service
 public interface AnalyticsService {
 
     /**
@@ -42,5 +47,23 @@ public interface AnalyticsService {
     DepartmentCostsResponse getDepartmentCosts(
             String sortBy,
             String order
+    );
+
+    /**
+     * Retrieves expensive tools analytics.
+     * <p>
+     * Analytics include:
+     * - expensive tools ranking
+     * - cost per user
+     * - efficiency rating
+     * - company-level analysis
+     *
+     * @param minCost optional minimum monthly cost
+     * @param limit maximum tools returned
+     * @return expensive tools analytics
+     */
+    ExpensiveToolsResponse getExpensiveTools(
+            BigDecimal minCost,
+            Integer limit
     );
 }

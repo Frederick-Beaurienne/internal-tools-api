@@ -4,9 +4,14 @@ import com.techcorp.internaltoolsapi.api.exception.InvalidAnalyticsParameterExce
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostSummaryResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsAnalysisResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsageMetricsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsagePeriodMetricsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.entity.enums.DepartmentCostSortField;
+import com.techcorp.internaltoolsapi.domain.analytics.enums.EfficiencyRating;
+import com.techcorp.internaltoolsapi.domain.analytics.mapper.AnalyticsMapper;
 import com.techcorp.internaltoolsapi.domain.analytics.repository.AnalyticsRepository;
 import com.techcorp.internaltoolsapi.domain.analytics.repository.UsageLogRepository;
 import com.techcorp.internaltoolsapi.domain.analytics.service.AnalyticsService;
@@ -14,6 +19,7 @@ import com.techcorp.internaltoolsapi.domain.tools.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.domain.tools.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.shared.numeric.NumericService;
 import com.techcorp.internaltoolsapi.shared.sort.SortDirection;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -136,6 +142,52 @@ public class AnalyticsServiceImpl
         return new DepartmentCostsResponse(data, summary);
     }
 
+    @Override
+    public ExpensiveToolsResponse getExpensiveTools(
+            BigDecimal minCost,
+            Integer limit
+    ) {
+
+        Integer validatedLimit =
+                validateAnalyticsLimit(
+                        limit
+                );
+
+        List<Object[]> results =
+                analyticsRepository.findExpensiveTools(
+                        minCost,
+                        PageRequest.of(
+                                0,
+                                validatedLimit
+                        )
+                );
+
+        if (results.isEmpty()) {
+
+            return buildEmptyExpensiveToolsResponse();
+        }
+
+        BigDecimal companyAvg =
+                calculateCompanyAverageCostPerUser(
+                        analyticsRepository
+                                .findActiveToolsForCompanyAverage()
+                );
+
+        List<ExpensiveToolResponse> data =
+                buildExpensiveToolsData(
+                        results,
+                        companyAvg
+                );
+
+        return new ExpensiveToolsResponse(
+                data,
+                buildExpensiveToolsAnalysis(
+                        data,
+                        companyAvg
+                )
+        );
+    }
+
     // ---------- PRIVATE METHODS ---------- //
 
     /**
@@ -154,31 +206,288 @@ public class AnalyticsServiceImpl
 
         for (Object[] row : results) {
 
-            DepartmentCostResponse response =
-                    new DepartmentCostResponse(
-                            row[0] != null ? row[0].toString() : null,
-                            numericService.roundMoney(
-                                    row[1] != null
-                                            ? (BigDecimal) row[1]
-                                            : BigDecimal.ZERO
-                            ),
-                            row[2] != null ? ((Number) row[2]).intValue() : 0,
-                            row[3] != null ? ((Number) row[3]).intValue() : 0,
-                            numericService.roundMoney(
-                                    row[4] != null
-                                            ? BigDecimal.valueOf(
-                                            ((Number) row[4]).doubleValue()
-                                    )
-                                            : BigDecimal.ZERO
-                            ),
-
-                            null // Calculated later via applyDepartmentCostPercentages()
-                    );
-
-            data.add(response);
+            data.add(
+                    AnalyticsMapper.toDepartmentCostResponse(
+                            row,
+                            numericService
+                    )
+            );
         }
 
         return data;
+    }
+
+    /**
+     * Validates analytics limit.
+     *
+     * @param limit requested limit
+     * @return validated limit
+     */
+    private Integer validateAnalyticsLimit(
+            Integer limit
+    ) {
+
+        if (limit == null) {
+            return 10;
+        }
+
+        if (limit < 1 || limit > 100) {
+
+            throw new InvalidAnalyticsParameterException(
+                    "Invalid analytics parameter",
+                    Map.of(
+                            "limit",
+                            "Must be positive integer between 1 and 100"
+                    )
+            );
+        }
+
+        return limit;
+    }
+
+    /**
+     * Calculates company-wide
+     * average tool cost per user.
+     * <p>
+     * Benchmark is computed as
+     * a company-wide weighted
+     * average:
+     * SUM(monthly_cost)
+     * / SUM(active_users_count)
+     * <p>
+     * Tools with zero users
+     * are excluded and handled
+     * separately through
+     * not_applicable
+     * efficiency rating.
+     *
+     * @param results repository results
+     * @return company average cpu
+     */
+    private BigDecimal calculateCompanyAverageCostPerUser(
+            List<Object[]> results
+    ) {
+
+        BigDecimal totalCost =
+                BigDecimal.ZERO;
+
+        int totalUsers = 0;
+
+        for (Object[] row : results) {
+
+            BigDecimal cost =
+                    row[0] != null
+                            ? (BigDecimal) row[0]
+                            : BigDecimal.ZERO;
+
+            int users =
+                    row[1] != null
+                            ? ((Number) row[1]).intValue()
+                            : 0;
+
+            if (users > 0) {
+
+                totalCost =
+                        totalCost.add(cost);
+
+                totalUsers += users;
+            }
+        }
+
+        if (totalUsers == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return numericService.roundMoney(
+                totalCost.divide(
+                        BigDecimal.valueOf(
+                                totalUsers
+                        ),
+                        4,
+                        java.math.RoundingMode.HALF_UP
+                )
+        );
+    }
+
+    /**
+     * Builds expensive tools data.
+     * <p>
+     * Efficiency rating rules:
+     * - calculated against
+     *   company average cpu
+     * - tools with zero users
+     *   receive
+     *   not_applicable
+     *   to avoid misleading
+     *   efficiency scoring
+     *
+     * @param results repository results
+     * @param companyAvg company average cpu
+     * @return analytics data
+     */
+    private List<ExpensiveToolResponse> buildExpensiveToolsData(
+            List<Object[]> results,
+            BigDecimal companyAvg
+    ) {
+
+        List<ExpensiveToolResponse> data =
+                new ArrayList<>();
+
+        for (Object[] row : results) {
+
+            BigDecimal cost =
+                    row[2] != null
+                            ? (BigDecimal) row[2]
+                            : BigDecimal.ZERO;
+
+            int users =
+                    row[3] != null
+                            ? ((Number) row[3]).intValue()
+                            : 0;
+
+            BigDecimal costPerUser =
+                    users > 0
+                            ? numericService.roundMoney(
+                            cost.divide(
+                                    BigDecimal.valueOf(
+                                            users
+                                    ),
+                                    4,
+                                    java.math.RoundingMode.HALF_UP
+                            )
+                    )
+                            : BigDecimal.ZERO;
+
+            EfficiencyRating rating =
+                    users == 0
+                            ? EfficiencyRating.not_applicable
+                            : resolveEfficiencyRating(
+                            costPerUser,
+                            companyAvg
+                    );
+
+            data.add(
+                    AnalyticsMapper.toExpensiveToolResponse(
+                            row,
+                            costPerUser,
+                            rating,
+                            numericService
+                    )
+            );
+        }
+
+        return data;
+    }
+
+    /**
+     * Resolves efficiency rating.
+     *
+     * @param cpu tool cpu
+     * @param companyAvg company avg cpu
+     * @return rating
+     */
+    private EfficiencyRating resolveEfficiencyRating(
+            BigDecimal cpu,
+            BigDecimal companyAvg
+    ) {
+
+        if (companyAvg.compareTo(
+                BigDecimal.ZERO
+        ) == 0) {
+
+            return EfficiencyRating.average;
+        }
+
+        BigDecimal ratio =
+                cpu.divide(
+                        companyAvg,
+                        4,
+                        java.math.RoundingMode.HALF_UP
+                );
+
+        if (ratio.compareTo(
+                BigDecimal.valueOf(
+                        0.5
+                )
+        ) < 0) {
+
+            return EfficiencyRating.excellent;
+        }
+
+        if (ratio.compareTo(
+                BigDecimal.valueOf(
+                        0.8
+                )
+        ) < 0) {
+
+            return EfficiencyRating.good;
+        }
+
+        if (ratio.compareTo(
+                BigDecimal.valueOf(
+                        1.2
+                )
+        ) <= 0) {
+
+            return EfficiencyRating.average;
+        }
+
+        return EfficiencyRating.low;
+    }
+
+    /**
+     * Builds expensive tools analysis.
+     *
+     * @param data tools data
+     * @param companyAvg company avg cpu
+     * @return analysis
+     */
+    private ExpensiveToolsAnalysisResponse buildExpensiveToolsAnalysis(
+            List<ExpensiveToolResponse> data,
+            BigDecimal companyAvg
+    ) {
+
+        BigDecimal savings =
+                BigDecimal.ZERO;
+
+        for (ExpensiveToolResponse tool : data) {
+
+            if (tool.getEfficiencyRating()
+                    == EfficiencyRating.low) {
+
+                savings =
+                        savings.add(
+                                tool.getMonthlyCost()
+                        );
+            }
+        }
+
+        return new ExpensiveToolsAnalysisResponse(
+                data.size(),
+                companyAvg,
+                numericService.roundMoney(
+                        savings
+                )
+        );
+    }
+
+    /**
+     * Builds empty expensive
+     * tools analytics response.
+     *
+     * @return empty response
+     */
+    private ExpensiveToolsResponse buildEmptyExpensiveToolsResponse() {
+
+        return new ExpensiveToolsResponse(
+                Collections.emptyList(),
+                "No analytics data available - ensure tools data exists",
+                new ExpensiveToolsAnalysisResponse(
+                        0,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO
+                )
+        );
     }
 
     /**
@@ -288,7 +597,11 @@ public class AnalyticsServiceImpl
         } catch (IllegalArgumentException ex) {
 
             throw new InvalidAnalyticsParameterException(
-                    "Invalid sort_by parameter. Allowed values: department, total_cost."
+                    "Invalid analytics parameter",
+                    Map.of(
+                            "sort_by",
+                            "Allowed values: department, total_cost"
+                    )
             );
         }
     }
@@ -321,7 +634,11 @@ public class AnalyticsServiceImpl
         } catch (IllegalArgumentException ex) {
 
             throw new InvalidAnalyticsParameterException(
-                    "Invalid order parameter. Allowed values: asc, desc."
+                    "Invalid analytics parameter",
+                    Map.of(
+                            "order",
+                            "Allowed values: asc, desc"
+                    )
             );
         }
     }

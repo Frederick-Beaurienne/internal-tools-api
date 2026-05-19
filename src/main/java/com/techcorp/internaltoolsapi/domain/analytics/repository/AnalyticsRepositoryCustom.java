@@ -4,6 +4,9 @@ import com.techcorp.internaltoolsapi.domain.analytics.entity.enums.DepartmentCos
 import com.techcorp.internaltoolsapi.domain.tools.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.shared.sort.SortDirection;
 
+import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface AnalyticsRepositoryCustom {
@@ -13,4 +16,26 @@ public interface AnalyticsRepositoryCustom {
             DepartmentCostSortField sortField,
             SortDirection direction
     );
+
+    /**
+     * Retrieves expensive tools
+     * ordered by monthly cost.
+     *
+     * @param minCost  minimum monthly cost
+     * @param pageable result limit
+     * @return expensive tools
+     */
+    List<Object[]> findExpensiveTools(
+            BigDecimal minCost,
+            Pageable pageable
+    );
+
+    /**
+     * Retrieves all active tools
+     * for company-wide
+     * cost per user analytics.
+     *
+     * @return active tools projection
+     */
+    List<Object[]> findActiveToolsForCompanyAverage();
 }

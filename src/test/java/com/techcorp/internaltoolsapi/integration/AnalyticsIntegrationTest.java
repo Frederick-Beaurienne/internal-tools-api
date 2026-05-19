@@ -103,10 +103,15 @@ class AnalyticsIntegrationTest {
                     .andExpect(status().isBadRequest())
 
                     .andExpect(jsonPath("$.error")
-                            .value("Invalid analytics parameter"))
+                            .value("Validation failed"))
 
                     .andExpect(jsonPath("$.message")
-                            .exists())
+                            .value("Invalid analytics parameter"))
+
+                    .andExpect(jsonPath("$.details.sort_by")
+                            .value(
+                                    "Allowed values: department, total_cost"
+                            ))
 
                     .andExpect(jsonPath("$.timestamp")
                             .exists());
@@ -127,6 +132,103 @@ class AnalyticsIntegrationTest {
                             .isArray())
 
                     .andExpect(jsonPath("$.summary")
+                            .exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("Expensive tools analytics tests")
+    class ExpensiveToolsAnalyticsTests {
+
+        @Test
+        @DisplayName("Should retrieve expensive tools from PostgreSQL")
+        void shouldRetrieveExpensiveToolsFromPostgreSQL()
+                throws Exception {
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.analysis")
+                            .exists())
+
+                    .andExpect(jsonPath(
+                            "$.analysis.total_tools_analyzed"
+                    ).exists())
+
+                    .andExpect(jsonPath(
+                            "$.analysis.avg_cost_per_user_company"
+                    ).exists())
+
+                    .andExpect(jsonPath(
+                            "$.analysis.potential_savings_identified"
+                    ).exists());
+        }
+
+        @Test
+        @DisplayName("Should filter expensive tools by min cost and limit")
+        void shouldFilterExpensiveToolsByMinCostAndLimit()
+                throws Exception {
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                                    .param(
+                                            "min_cost",
+                                            "50"
+                                    )
+                                    .param(
+                                            "limit",
+                                            "5"
+                                    )
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.data.length()")
+                            .value(5))
+
+                    .andExpect(jsonPath(
+                            "$.data[0].monthly_cost"
+                    ).exists());
+        }
+
+        @Test
+        @DisplayName("Should return 400 for invalid limit parameter")
+        void shouldReturn400ForInvalidLimitParameter()
+                throws Exception {
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                                    .param(
+                                            "limit",
+                                            "-5"
+                                    )
+                    )
+
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.error")
+                            .value("Validation failed"))
+
+                    .andExpect(jsonPath("$.message")
+                            .value(
+                                    "Invalid analytics parameter"
+                            ))
+
+                    .andExpect(jsonPath("$.details.limit")
+                            .value(
+                                    "Must be positive integer between 1 and 100"
+                            ))
+
+                    .andExpect(jsonPath("$.timestamp")
                             .exists());
         }
     }

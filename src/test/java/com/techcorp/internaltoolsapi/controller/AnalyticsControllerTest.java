@@ -5,6 +5,10 @@ import com.techcorp.internaltoolsapi.api.exception.InvalidAnalyticsParameterExce
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostSummaryResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsAnalysisResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.enums.EfficiencyRating;
 import com.techcorp.internaltoolsapi.domain.analytics.service.AnalyticsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -177,7 +182,11 @@ class AnalyticsControllerTest {
                     null
             )).thenThrow(
                     new InvalidAnalyticsParameterException(
-                            "Invalid sort_by parameter. Allowed values: department, total_cost."
+                            "Invalid sort_by parameter",
+                            Map.of(
+                                    "sort_by",
+                                    "Allowed values: department, total_cost"
+                            )
                     )
             );
 
@@ -192,11 +201,14 @@ class AnalyticsControllerTest {
                     .andExpect(status().isBadRequest())
 
                     .andExpect(jsonPath("$.error")
-                            .value("Invalid analytics parameter"))
+                            .value("Validation failed"))
 
                     .andExpect(jsonPath("$.message")
+                            .value("Invalid analytics parameter"))
+
+                    .andExpect(jsonPath("$.details.sort_by")
                             .value(
-                                    "Invalid sort_by parameter. Allowed values: department, total_cost."
+                                    "Allowed values: department, total_cost"
                             ))
 
                     .andExpect(jsonPath("$.timestamp")
@@ -240,6 +252,162 @@ class AnalyticsControllerTest {
                             null,
                             null
                     );
+        }
+    }
+
+    @Nested
+    @DisplayName("Expensive tools endpoints tests")
+    class ExpensiveToolsEndpointsTests {
+
+        private ExpensiveToolsResponse createMockExpensiveToolsResponse() {
+
+            return new ExpensiveToolsResponse(
+                    List.of(
+                            new ExpensiveToolResponse(
+                                    1,
+                                    "Slack Enterprise",
+                                    new BigDecimal("1800.00"),
+                                    220,
+                                    new BigDecimal("8.18"),
+                                    "Engineering",
+                                    "Slack",
+                                    EfficiencyRating.low
+                            )
+                    ),
+                    new ExpensiveToolsAnalysisResponse(
+                            1,
+                            new BigDecimal("5.97"),
+                            new BigDecimal("1800.00")
+                    )
+            );
+        }
+
+        @Test
+        @DisplayName("Should return default expensive tools analytics")
+        void shouldReturnDefaultExpensiveToolsAnalytics()
+                throws Exception {
+
+            when(analyticsService.getExpensiveTools(
+                    null,
+                    null
+            )).thenReturn(
+                    createMockExpensiveToolsResponse()
+            );
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.data.length()")
+                            .value(1))
+
+                    .andExpect(jsonPath("$.data[0].name")
+                            .value("Slack Enterprise"))
+
+                    .andExpect(jsonPath("$.data[0].monthly_cost")
+                            .value(1800.00))
+
+                    .andExpect(jsonPath("$.analysis.total_tools_analyzed")
+                            .value(1))
+
+                    .andExpect(jsonPath("$.analysis.avg_cost_per_user_company")
+                            .value(5.97))
+
+                    .andExpect(jsonPath("$.analysis.potential_savings_identified")
+                            .value(1800.00));
+
+            verify(analyticsService)
+                    .getExpensiveTools(
+                            null,
+                            null
+                    );
+        }
+
+        @Test
+        @DisplayName("Should filter expensive tools by min cost and limit")
+        void shouldFilterExpensiveToolsByMinCostAndLimit()
+                throws Exception {
+
+            when(analyticsService.getExpensiveTools(
+                    new BigDecimal("50"),
+                    5
+            )).thenReturn(
+                    createMockExpensiveToolsResponse()
+            );
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                                    .param(
+                                            "min_cost",
+                                            "50"
+                                    )
+                                    .param(
+                                            "limit",
+                                            "5"
+                                    )
+                    )
+
+                    .andExpect(status().isOk())
+
+                    .andExpect(jsonPath("$.data")
+                            .isArray())
+
+                    .andExpect(jsonPath("$.data[0].name")
+                            .value("Slack Enterprise"));
+
+            verify(analyticsService)
+                    .getExpensiveTools(
+                            new BigDecimal("50"),
+                            5
+                    );
+        }
+
+        @Test
+        @DisplayName("Should return 400 for invalid limit parameter")
+        void shouldReturn400ForInvalidLimitParameter()
+                throws Exception {
+
+            when(analyticsService.getExpensiveTools(
+                    null,
+                    -5
+            )).thenThrow(
+                    new InvalidAnalyticsParameterException(
+                            "Invalid analytics parameter",
+                            Map.of(
+                                    "limit",
+                                    "Must be positive integer between 1 and 100"
+                            )
+                    )
+            );
+
+            mockMvc.perform(
+                            get("/api/analytics/expensive-tools")
+                                    .param(
+                                            "limit",
+                                            "-5"
+                                    )
+                    )
+
+                    .andExpect(status().isBadRequest())
+
+                    .andExpect(jsonPath("$.error")
+                            .value("Validation failed"))
+
+                    .andExpect(jsonPath("$.message")
+                            .value("Invalid analytics parameter"))
+
+                    .andExpect(jsonPath("$.details.limit")
+                            .value(
+                                    "Must be positive integer between 1 and 100"
+                            ))
+
+                    .andExpect(jsonPath("$.timestamp")
+                            .exists());
         }
     }
 }

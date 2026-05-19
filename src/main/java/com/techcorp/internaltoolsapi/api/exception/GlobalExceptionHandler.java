@@ -88,10 +88,11 @@ public class GlobalExceptionHandler {
                 exception.getMessage()
         );
 
-        ErrorResponse response = ErrorResponse.error(
-                "Invalid analytics parameter",
-                exception.getMessage()
-        );
+        ErrorResponse response =
+                ErrorResponse.validationError(
+                        "Invalid analytics parameter",
+                        exception.getDetails()
+                );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
