@@ -2,7 +2,7 @@ package com.techcorp.internaltoolsapi.domain.tools.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.techcorp.internaltoolsapi.domain.analytics.dto.response.UsageMetricsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsageMetricsResponse;
 
 import java.math.BigDecimal;
 

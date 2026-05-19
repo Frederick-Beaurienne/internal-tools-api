@@ -219,7 +219,7 @@ public class Tool {
         this.updatedAt = updatedAt;
     }
 
-    // ---------- OBJECT METHODS ---------- //
+    // ---------- TO STRING ---------- //
 
     @Override
     public String toString() {

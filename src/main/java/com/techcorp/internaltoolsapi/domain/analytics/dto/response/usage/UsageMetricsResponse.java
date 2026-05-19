@@ -1,4 +1,4 @@
-package com.techcorp.internaltoolsapi.domain.analytics.dto.response;
+package com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

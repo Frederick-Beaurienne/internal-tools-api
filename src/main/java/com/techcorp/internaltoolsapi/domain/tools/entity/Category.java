@@ -52,7 +52,7 @@ public class Category {
         this.name = name;
     }
 
-    // ---------- OBJECT METHODS ---------- //
+    // ---------- TO STRING ---------- //
 
     @Override
     public String toString() {

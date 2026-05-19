@@ -8,8 +8,8 @@ import com.techcorp.internaltoolsapi.domain.tools.dto.response.ToolDetailsRespon
 import com.techcorp.internaltoolsapi.domain.tools.dto.response.ToolResponse;
 import com.techcorp.internaltoolsapi.domain.tools.dto.response.metadata.PaginationMetadata;
 import com.techcorp.internaltoolsapi.domain.tools.dto.response.metadata.SortingMetadata;
-import com.techcorp.internaltoolsapi.domain.analytics.dto.response.UsageMetricsResponse;
-import com.techcorp.internaltoolsapi.domain.analytics.dto.response.UsagePeriodMetricsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsageMetricsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsagePeriodMetricsResponse;
 import com.techcorp.internaltoolsapi.domain.tools.entity.enums.DepartmentType;
 import com.techcorp.internaltoolsapi.domain.tools.entity.enums.ToolStatusType;
 import com.techcorp.internaltoolsapi.api.exception.ResourceNotFoundException;

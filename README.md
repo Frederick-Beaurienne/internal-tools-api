@@ -44,6 +44,11 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - Dockerized database environment
 - Layered architecture
 - Real usage metrics aggregation
+- Department cost analytics
+- Department-level cost distribution insights
+- Company budget aggregation
+- Defensive analytics sorting
+- Empty analytics dataset handling
 
 ---
 
@@ -265,6 +270,11 @@ The project currently includes:
 - API response contract verification
 - Dynamic filtering endpoint testing
 - Query parameter binding verification
+- Analytics endpoint testing
+- Analytics response contract verification
+- Analytics sorting validation
+- Analytics error handling validation
+- Empty analytics scenario verification
 
 ---
 
@@ -439,6 +449,50 @@ This separation was chosen to:
 - avoid polluting core CRUD business logic
 - prepare future analytical features
 - keep reporting logic modular and extensible
+
+## Department Cost Analytics Strategy
+
+The `/api/analytics/department-costs`
+endpoint follows a business-oriented
+analytics strategy.
+
+Analytics behavior intentionally differs
+from CRUD endpoints in order to provide
+stable reporting contracts.
+
+Implemented rules:
+
+- only active tools are included
+- financial values use controlled rounding
+  through `NumericService`
+- department aggregation is performed
+  at database level
+- sorting is primarily executed through
+  Criteria API queries
+- defensive Java post-sorting preserves
+  sorting contracts after analytics
+  dataset enrichment
+- departments without active tools are
+  returned with zero-valued metrics
+- empty analytics datasets return
+  explicit business-oriented responses
+
+Empty analytics responses intentionally use:
+
+```json
+{
+  "data": [],
+  "message": "No analytics data available - ensure tools data exists",
+  "summary": {
+    "total_company_cost": 0
+  }
+}
+```
+This approach was chosen to:
+- preserve API compatibility
+- maintain stable response contracts
+- expose predictable analytical behavior
+- support future reporting expansion
 
 ---
 
