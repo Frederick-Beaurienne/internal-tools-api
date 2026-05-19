@@ -38,4 +38,12 @@ public interface AnalyticsRepositoryCustom {
      * @return active tools projection
      */
     List<Object[]> findActiveToolsForCompanyAverage();
+
+    /**
+     * Retrieves category analytics
+     * aggregation for active tools.
+     *
+     * @return category analytics projection
+     */
+    List<Object[]> getToolsByCategory();
 }

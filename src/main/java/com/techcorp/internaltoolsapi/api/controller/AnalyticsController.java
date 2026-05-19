@@ -1,5 +1,5 @@
 package com.techcorp.internaltoolsapi.api.controller;
-
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.service.AnalyticsService;
@@ -353,6 +353,111 @@ public class AnalyticsController {
                         minCost,
                         limit
                 );
+
+        return response;
+    }
+
+    /**
+     * Retrieves category
+     * analytics.
+     *
+     * @return category analytics
+     */
+    @GetMapping("/tools-by-category")
+    @Operation(
+            summary = "Retrieve tools by category analytics",
+            description = """
+                Returns category-level
+                analytics and budget
+                distribution insights.
+                
+                Analytics include:
+                - category aggregation
+                - tools count
+                - users count
+                - budget percentages
+                - average cost per user
+                - category insights
+                
+                Global analytics rules:
+                - only active tools are included
+                - categories are ordered by
+                  total cost descending
+                - financial calculations use
+                  controlled rounding
+                - division by zero
+                  is safely handled
+                - empty datasets return
+                  an explicit analytics message
+                - most efficient category
+                  excludes zero-user
+                  categories and uses
+                  alphabetical tie resolution
+                """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = """
+                        Category analytics
+                        successfully retrieved.
+                        May return either:
+                        - populated analytics
+                        - empty analytics response
+                        """,
+                    content = @Content(
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Default category analytics response",
+                                            summary = "Category analytics with active tools",
+                                            value = """
+                                                {
+                                                  "data": [
+                                                    {
+                                                      "category_name": "Communication",
+                                                      "tools_count": 3,
+                                                      "total_cost": 2314.99,
+                                                      "total_users": 320,
+                                                      "percentage_of_budget": 75.0,
+                                                      "average_cost_per_user": 7.23
+                                                    }
+                                                  ],
+                                                  "insights": {
+                                                    "most_expensive_category": "Communication",
+                                                    "most_efficient_category": "Productivity"
+                                                  }
+                                                }
+                                                """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Empty category analytics response",
+                                            summary = "No analytics data available",
+                                            value = """
+                                                {
+                                                  "data": [],
+                                                  "message": "No analytics data available - ensure tools data exists",
+                                                  "insights": {
+                                                    "most_expensive_category": null,
+                                                    "most_efficient_category": null
+                                                  }
+                                                }
+                                                """
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = """
+                        Invalid analytics
+                        parameters supplied.
+                        """
+            )
+    })
+    public CategoryToolsResponse getToolsByCategory() {
+
+        CategoryToolsResponse response =
+                analyticsService.getToolsByCategory();
 
         return response;
     }

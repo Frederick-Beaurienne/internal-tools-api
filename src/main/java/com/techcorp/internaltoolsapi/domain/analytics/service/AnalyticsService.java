@@ -1,6 +1,7 @@
 package com.techcorp.internaltoolsapi.domain.analytics.service;
 
 
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.expensivetools.ExpensiveToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.usage.UsageMetricsResponse;
@@ -66,4 +67,20 @@ public interface AnalyticsService {
             BigDecimal minCost,
             Integer limit
     );
+
+    /**
+     * Retrieves category analytics.
+     * <p>
+     * Analytics include:
+     * - category aggregation
+     * - tools count
+     * - users count
+     * - budget percentages
+     * - category insights
+     * <p>
+     * Only active tools are included.
+     *
+     * @return category analytics
+     */
+    CategoryToolsResponse getToolsByCategory();
 }

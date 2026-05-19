@@ -55,6 +55,9 @@ Spring Boot REST API for managing internal SaaS tools with analytics, reporting 
 - Cost optimization insights
 - Database-driven analytics filtering
 - Efficiency rating analytics
+- Category analytics
+- Budget distribution analytics
+- Category efficiency insights
 - Insomnia API collection export
 
 ---
@@ -313,6 +316,8 @@ The project currently includes:
 - Analytics optimization workflow testing
 - Structured analytics validation errors
 - Expensive tools endpoint verification
+- Category analytics endpoint verification
+- Analytics aggregation workflow validation
 
 ---
 
@@ -349,10 +354,14 @@ The project currently includes:
 - Structured error response validation
 - REST contract verification
 - Real usage analytics aggregation
+- Category analytics endpoint
+- Cost optimization analytics
+- Database-driven reporting aggregation
 
 ## In Progress
 
-- Advanced analytics and reporting endpoints
+- Analytics and reporting expansion
+- Additional optimization endpoints
 
 ---
 
@@ -607,12 +616,40 @@ This approach was chosen to:
 - support future optimization
   and reporting features
 
+## Incremental Analytics Delivery Strategy
+
+Given the exercise timeframe and progressive
+delivery constraints, a deliberate design
+choice was made regarding analytics features.
+
+The project prioritizes delivering fully
+functional and production-oriented analytics
+features, even if limited in scope, rather
+than partially implemented or incomplete
+reporting capabilities.
+
+This strategy was chosen to:
+
+- preserve functional coherence
+- maintain stable API contracts
+- avoid unfinished business logic
+- ensure meaningful testing coverage
+- favor demonstrable software quality
+  over feature quantity
+
+Implemented analytics endpoints therefore
+represent complete and operational
+business workflows rather than prototypes
+or partially implemented features.
+
 ---
 
 # Future Improvements
 
 - Advanced search capabilities
-- Advanced analytics endpoints
+- Underutilized tools analytics endpoint
+- Vendor summary analytics endpoint
+- Advanced analytics expansion
 - Authentication / authorization
 - CI/CD pipeline
 - Metrics & monitoring

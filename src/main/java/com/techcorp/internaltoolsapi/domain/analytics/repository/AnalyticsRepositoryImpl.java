@@ -205,6 +205,81 @@ public class AnalyticsRepositoryImpl
                 .getResultList();
     }
 
+    @Override
+    public List<Object[]> getToolsByCategory() {
+
+        CriteriaBuilder cb =
+                entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<Object[]> query =
+                cb.createQuery(
+                        Object[].class
+                );
+
+        Root<Tool> tool =
+                query.from(
+                        Tool.class
+                );
+
+        Join<Object, Object> category =
+                tool.join(
+                        "category",
+                        JoinType.INNER
+                );
+
+        Expression<?> categoryName =
+                category.get(
+                        "name"
+                );
+
+        Expression<?> toolsCount =
+                cb.count(
+                        tool
+                );
+
+        Expression<?> totalCost =
+                cb.sum(
+                        tool.get(
+                                "monthlyCost"
+                        )
+                );
+
+        Expression<?> totalUsers =
+                cb.sum(
+                        tool.get(
+                                "activeUsersCount"
+                        )
+                );
+
+        query.multiselect(
+                categoryName,
+                toolsCount,
+                totalCost,
+                totalUsers
+        );
+
+        query.where(
+                cb.equal(
+                        tool.get(
+                                "status"
+                        ),
+                        ToolStatusType.active
+                )
+        );
+
+        query.groupBy(
+                categoryName
+        );
+
+        query.orderBy(
+                cb.desc(
+                        totalCost
+                )
+        );
+
+        return entityManager.createQuery(query).getResultList();
+    }
+
     // ---------- PRIVATE METHODS ---------- //
 
     /**

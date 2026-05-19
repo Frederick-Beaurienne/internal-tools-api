@@ -2,6 +2,9 @@ package com.techcorp.internaltoolsapi.controller;
 
 import com.techcorp.internaltoolsapi.api.controller.AnalyticsController;
 import com.techcorp.internaltoolsapi.api.exception.InvalidAnalyticsParameterException;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryInsightsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostSummaryResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
@@ -408,6 +411,102 @@ class AnalyticsControllerTest {
 
                     .andExpect(jsonPath("$.timestamp")
                             .exists());
+        }
+    }
+
+    @Nested
+    @DisplayName("Tools by category endpoints tests")
+    class ToolsByCategoryEndpointsTests {
+
+        private CategoryToolsResponse
+        createMockCategoryToolsResponse() {
+
+            return new CategoryToolsResponse(
+                    List.of(
+                            new CategoryResponse(
+                                    "Communication",
+                                    3,
+                                    new BigDecimal(
+                                            "2314.99"
+                                    ),
+                                    320,
+                                    75.0,
+                                    new BigDecimal(
+                                            "7.23"
+                                    )
+                            )
+                    ),
+                    new CategoryInsightsResponse(
+                            "Communication",
+                            "Communication"
+                    )
+            );
+        }
+
+        @Test
+        @DisplayName(
+                "Should return default tools by category analytics"
+        )
+        void shouldReturnDefaultToolsByCategoryAnalytics()
+                throws Exception {
+
+            when(
+                    analyticsService
+                            .getToolsByCategory()
+            ).thenReturn(
+                    createMockCategoryToolsResponse()
+            );
+
+            mockMvc.perform(
+                            get(
+                                    "/api/analytics/tools-by-category"
+                            )
+                    )
+
+                    .andExpect(
+                            status().isOk()
+                    )
+
+                    .andExpect(
+                            jsonPath("$.data")
+                                    .isArray()
+                    )
+
+                    .andExpect(
+                            jsonPath("$.data.length()")
+                                    .value(1)
+                    )
+
+                    .andExpect(
+                            jsonPath(
+                                    "$.data[0].category_name"
+                            )
+                                    .value(
+                                            "Communication"
+                                    )
+                    )
+
+                    .andExpect(
+                            jsonPath(
+                                    "$.data[0].total_cost"
+                            )
+                                    .value(
+                                            2314.99
+                                    )
+                    )
+
+                    .andExpect(
+                            jsonPath(
+                                    "$.insights.most_expensive_category"
+                            )
+                                    .value(
+                                            "Communication"
+                                    )
+                    );
+
+            verify(
+                    analyticsService
+            ).getToolsByCategory();
         }
     }
 }

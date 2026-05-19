@@ -1,6 +1,9 @@
 package com.techcorp.internaltoolsapi.domain.analytics.service.impl;
 
 import com.techcorp.internaltoolsapi.api.exception.InvalidAnalyticsParameterException;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryInsightsResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryResponse;
+import com.techcorp.internaltoolsapi.domain.analytics.dto.response.category.CategoryToolsResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostSummaryResponse;
 import com.techcorp.internaltoolsapi.domain.analytics.dto.response.departmentcost.DepartmentCostsResponse;
@@ -188,6 +191,53 @@ public class AnalyticsServiceImpl
         );
     }
 
+    /**
+     * Retrieves category analytics.
+     * <p>
+     * Analytics include:
+     * - category aggregation
+     * - active tools only
+     * - tools count
+     * - users count
+     * - budget distribution
+     * - category insights
+     * <p>
+     * Categories are aggregated
+     * at database level and
+     * ordered by total cost
+     * descending.
+     *
+     * @return category analytics
+     */
+    @Override
+    public CategoryToolsResponse getToolsByCategory() {
+
+        List<Object[]> results =
+                analyticsRepository
+                        .getToolsByCategory();
+
+        if (results.isEmpty()) {
+
+            return buildEmptyCategoryToolsResponse();
+        }
+
+        List<CategoryResponse> data =
+                buildCategoryData(
+                        results
+                );
+
+        applyCategoryBudgetPercentages(
+                data
+        );
+
+        return new CategoryToolsResponse(
+                data,
+                buildCategoryInsights(
+                        data
+                )
+        );
+    }
+
     // ---------- PRIVATE METHODS ---------- //
 
     /**
@@ -314,14 +364,14 @@ public class AnalyticsServiceImpl
      * <p>
      * Efficiency rating rules:
      * - calculated against
-     *   company average cpu
+     * company average cpu
      * - tools with zero users
-     *   receive
-     *   not_applicable
-     *   to avoid misleading
-     *   efficiency scoring
+     * receive
+     * not_applicable
+     * to avoid misleading
+     * efficiency scoring
      *
-     * @param results repository results
+     * @param results    repository results
      * @param companyAvg company average cpu
      * @return analytics data
      */
@@ -382,7 +432,7 @@ public class AnalyticsServiceImpl
     /**
      * Resolves efficiency rating.
      *
-     * @param cpu tool cpu
+     * @param cpu        tool cpu
      * @param companyAvg company avg cpu
      * @return rating
      */
@@ -438,7 +488,7 @@ public class AnalyticsServiceImpl
     /**
      * Builds expensive tools analysis.
      *
-     * @param data tools data
+     * @param data       tools data
      * @param companyAvg company avg cpu
      * @return analysis
      */
@@ -779,5 +829,219 @@ public class AnalyticsServiceImpl
         return data.stream()
                 .sorted(comparator)
                 .toList();
+    }
+
+    /**
+     * Builds category-level
+     * analytics data from
+     * repository aggregation
+     * results.
+     * <p>
+     * Average cost per user
+     * is safely calculated
+     * using defensive
+     * division handling.
+     *
+     * @param results repository results
+     * @return category analytics
+     */
+    private List<CategoryResponse> buildCategoryData(
+            List<Object[]> results
+    ) {
+
+        List<CategoryResponse> data =
+                new ArrayList<>();
+
+        for (Object[] row : results) {
+
+            String category =
+                    row[0] != null
+                            ? row[0].toString()
+                            : null;
+
+            Integer toolsCount =
+                    row[1] != null
+                            ? ((Number) row[1]).intValue()
+                            : 0;
+
+            BigDecimal totalCost =
+                    row[2] != null
+                            ? (BigDecimal) row[2]
+                            : BigDecimal.ZERO;
+
+            Integer totalUsers =
+                    row[3] != null
+                            ? ((Number) row[3]).intValue()
+                            : 0;
+
+            BigDecimal avgCpu =
+                    totalUsers > 0
+                            ? numericService.roundMoney(
+                            totalCost.divide(
+                                    BigDecimal.valueOf(
+                                            totalUsers
+                                    ),
+                                    4,
+                                    java.math.RoundingMode.HALF_UP
+                            )
+                    )
+                            : BigDecimal.ZERO;
+
+            data.add(
+                    new CategoryResponse(
+                            category,
+                            toolsCount,
+                            totalCost,
+                            totalUsers,
+                            0.0,
+                            avgCpu
+                    )
+            );
+        }
+
+        return data;
+    }
+
+    /**
+     * Applies category budget percentages.
+     *
+     * @param data category analytics
+     */
+    private void applyCategoryBudgetPercentages(
+            List<CategoryResponse> data
+    ) {
+
+        BigDecimal totalCompanyCost =
+                BigDecimal.ZERO;
+
+        for (CategoryResponse category : data) {
+
+            totalCompanyCost =
+                    totalCompanyCost.add(
+                            category.getTotalCost()
+                    );
+        }
+
+        if (totalCompanyCost.compareTo(
+                BigDecimal.ZERO
+        ) == 0) {
+
+            return;
+        }
+
+        for (CategoryResponse category : data) {
+
+            double percentage =
+                    numericService.roundPercentage(
+                            category.getTotalCost()
+                                    .multiply(
+                                            BigDecimal.valueOf(
+                                                    100
+                                            )
+                                    )
+                                    .divide(
+                                            totalCompanyCost,
+                                            4,
+                                            java.math.RoundingMode.HALF_UP
+                                    )
+                    );
+
+            category.setPercentageOfBudget(
+                    percentage
+            );
+        }
+    }
+
+    /**
+     * Builds category insights.
+     * <p>
+     * Insights include:
+     * - most expensive category
+     * - most efficient category
+     * <p>
+     * Efficiency is determined
+     * by lowest average
+     * cost per user.
+     * <p>
+     * Categories with zero users
+     * are excluded from
+     * efficiency evaluation.
+     * Ties are resolved using
+     * alphabetical ordering.
+     *
+     * @param data category analytics
+     * @return insights
+     */
+    private CategoryInsightsResponse buildCategoryInsights(
+            List<CategoryResponse> data
+    ) {
+
+        CategoryResponse expensive =
+                null;
+
+        CategoryResponse efficient =
+                null;
+
+        for (CategoryResponse category : data) {
+
+            if (expensive == null
+                    || category.getTotalCost().compareTo(
+                    expensive.getTotalCost()
+            ) > 0) {
+
+                expensive =
+                        category;
+            }
+
+            if (category.getTotalUsers() > 0) {
+
+                if (efficient == null
+                        || category.getAverageCostPerUser()
+                        .compareTo(
+                                efficient.getAverageCostPerUser()
+                        ) < 0
+                        || (
+                        category.getAverageCostPerUser()
+                                .compareTo(
+                                        efficient.getAverageCostPerUser()
+                                ) == 0
+                                && category.getCategoryName()
+                                .compareTo(
+                                        efficient.getCategoryName()
+                                ) < 0
+                )) {
+
+                    efficient =
+                            category;
+                }
+            }
+        }
+
+        return new CategoryInsightsResponse(
+                expensive != null
+                        ? expensive.getCategoryName()
+                        : null,
+
+                efficient != null
+                        ? efficient.getCategoryName()
+                        : null
+        );
+    }
+
+    /**
+     * Builds empty category analytics response.
+     *
+     * @return empty response
+     */
+    private CategoryToolsResponse buildEmptyCategoryToolsResponse() {
+
+        return new CategoryToolsResponse(
+                Collections.emptyList(),
+                "No analytics data available - ensure tools data exists",
+                new CategoryInsightsResponse(
+                        null,
+                        null
+                )
+        );
     }
 }

@@ -232,4 +232,49 @@ class AnalyticsIntegrationTest {
                             .exists());
         }
     }
+
+    @Nested
+    @DisplayName("Tools by category analytics tests")
+    class ToolsByCategoryAnalyticsTests {
+
+        @Test
+        @DisplayName(
+                "Should retrieve tools by category from PostgreSQL"
+        )
+        void shouldRetrieveToolsByCategoryFromPostgreSQL()
+                throws Exception {
+
+            mockMvc.perform(
+                            get(
+                                    "/api/analytics/tools-by-category"
+                            )
+                    )
+
+                    .andExpect(
+                            status().isOk()
+                    )
+
+                    .andExpect(
+                            jsonPath("$.data")
+                                    .isArray()
+                    )
+
+                    .andExpect(
+                            jsonPath("$.insights")
+                                    .exists()
+                    )
+
+                    .andExpect(
+                            jsonPath(
+                                    "$.insights.most_expensive_category"
+                            ).exists()
+                    )
+
+                    .andExpect(
+                            jsonPath(
+                                    "$.insights.most_efficient_category"
+                            ).exists()
+                    );
+        }
+    }
 }

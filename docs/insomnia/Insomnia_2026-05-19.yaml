@@ -640,6 +640,44 @@ collection:
             send: true
             store: true
           rebuildPath: true
+      - url: http://localhost:8080/api/analytics/tools-by-category
+        name: Analytics - Tools By Category - Default Analytics
+        meta:
+          id: req_3ec5ea30200c4d74b55cab226c8cff96
+          created: 1779203847053
+          modified: 1779203860964
+          isPrivate: false
+          description: ""
+          sortKey: -1779099094329.5845
+        method: GET
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "monthly_cost": 7.00,
+              "status": "deprecated",
+              "description": "Updated description after renewal"
+            }
+        parameters:
+          - name: limit
+            value: "-5"
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:
